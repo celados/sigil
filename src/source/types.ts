@@ -39,7 +39,8 @@ export interface IconSource {
 	vendored?(): boolean
 	search(
 		query: string,
-		opts?: { set?: string; limit?: number },
+		// set 单库过滤;sets 多库过滤(iconify fallback 用于"已 use 的长尾库"作用域搜索)
+		opts?: { set?: string; sets?: string[]; limit?: number },
 	): Promise<SearchResult>
 	/** 批量解析;缺失不抛错而是报告,失败策略由调用方决定 */
 	resolve(refs: IconRef[]): Promise<{

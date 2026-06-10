@@ -5,13 +5,36 @@ import * as v from 'valibot'
 
 const s = toStandardJsonSchema
 
-// ref 语法统一为 <set>/<name>(也接受 <set>:<name>);set/a,b,c 逗号展开
+// ref 语法统一为 <set>/<name>(也接受 <set>:<name>)
 export const schema = {
+	use: c
+		.meta({
+			description:
+				'Declare icon libraries for this project and vendor them locally. Later search/add/etch run against these libraries offline.',
+			examples: [
+				'sigil use lucide',
+				'sigil use lucide svgl',
+				'sigil use ph --variant duotone',
+			],
+		})
+		.args('sets...')
+		.input(
+			s(
+				v.object({
+					sets: v.pipe(v.array(v.string()), v.minLength(1)),
+					variant: v.optional(v.string()),
+					prefix: v.optional(v.string()),
+				}),
+			),
+		),
+
 	search: c
 		.meta({
-			description: 'Search icons across 200+ icon sets',
+			description:
+				'Search icons. Default scope: libraries declared via `use` (local, offline). --all searches the full Iconify index (200+ sets) for discovery.',
 			examples: [
-				'sigil search github',
+				'sigil search house',
+				'sigil search github --all',
 				'sigil search home --set lucide --json',
 			],
 		})
@@ -21,6 +44,7 @@ export const schema = {
 				v.object({
 					query: v.string(),
 					set: v.optional(v.string()),
+					all: v.optional(v.boolean(), false),
 					limit: v.optional(
 						v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(999)),
 						64,
@@ -53,8 +77,9 @@ export const schema = {
 	// 使用者是 agent:不设 rm/ls 这类人类向 alias,全名即一个 token
 	remove: c
 		.meta({
-			description: 'Remove icons from the manifest',
-			examples: ['sigil remove lucide/house'],
+			description:
+				'Remove icons from the manifest. A bare set name (no /) removes the whole library declaration.',
+			examples: ['sigil remove lucide/house', 'sigil remove svgl'],
 		})
 		.args('refs...')
 		.input(s(v.object({ refs: v.pipe(v.array(v.string()), v.minLength(1)) }))),

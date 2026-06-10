@@ -65,6 +65,8 @@ export const iconifySource: IconSource = {
 		const url = new URL(`${API}/search`)
 		url.searchParams.set('query', query)
 		if (opts?.set) url.searchParams.set('prefix', opts.set)
+		if (opts?.sets?.length)
+			url.searchParams.set('prefixes', opts.sets.join(','))
 		if (opts?.limit) url.searchParams.set('limit', String(opts.limit))
 		const data = (await getJson(url)) as SearchResponse
 

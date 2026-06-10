@@ -7,6 +7,7 @@ import { iconifySource } from './iconify.ts'
 import { createLucideSource } from './lucide.ts'
 import { createPhSource } from './ph.ts'
 import { createSimpleIconsSource } from './simple-icons.ts'
+import { createSvglSource } from './svgl.ts'
 import { createTablerSource } from './tabler.ts'
 
 /**
@@ -19,6 +20,7 @@ const factories: Record<string, (dir: string) => IconSource> = {
 	lucide: createLucideSource,
 	ph: createPhSource,
 	'simple-icons': createSimpleIconsSource,
+	svgl: createSvglSource,
 	tabler: createTablerSource,
 }
 

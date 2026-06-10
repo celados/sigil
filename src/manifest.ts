@@ -39,7 +39,7 @@ export function saveManifest(path: string, manifest: Manifest): void {
 	const sorted: Manifest = {}
 	for (const set of Object.keys(manifest).sort()) {
 		const config = manifest[set]!
-		if (config.icons.length === 0) continue
+		// 空 icons 的 set 保留:它是 `use` 声明的"项目使用这个库"标记
 		sorted[set] = {
 			...(config.variant ? { variant: config.variant } : {}),
 			...(config.prefix ? { prefix: config.prefix } : {}),

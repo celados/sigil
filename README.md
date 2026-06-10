@@ -4,18 +4,22 @@ Agent-friendly icon package manager. Manage icons like dependencies: declare
 them in a manifest, and codegen is a pure projection of it.
 
 ```sh
-sigil search github                          # search across 200+ icon sets
-sigil add lucide/house+menu,simple-icons/github   # vendor + record in icons.json
+sigil use lucide svgl                        # declare libraries + vendor locally
+sigil search house                           # scoped to declared libraries, offline
+sigil search github --all                    # global discovery (200+ sets via Iconify)
+sigil add lucide/house+menu,svgl/github      # record in icons.json
 sigil etch --output src/icons.tsx --jsx react     # generate a component module
 sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
 ```
 
 ## How it works
 
-- **search → add → etch**, modeled on a package manager.
-- `add` blobless-sparse-clones the icon set into `node_modules/.icons/<set>/`,
+- **use → search → add → etch**, modeled on a package manager: declare which
+  libraries the project uses, then work inside them.
+- `use` blobless-sparse-clones each icon set into `node_modules/.icons/<set>/`,
   then every later command runs against local files — fast, offline, and able to
-  find icons the hosted search index hides.
+  find icons the hosted search index hides. `etch` re-vendors on a fresh
+  checkout, like `pnpm install`.
 - `etch` is a deterministic, atomic projection of `icons.json`: any missing icon
   fails the whole run without writing a file.
 - Component names are stable across variants (`PhHouse` whether weight is
@@ -40,8 +44,8 @@ Grouped by set; `variant` and `prefix` are set-level design decisions:
 
 ```jsonc
 {
-  "ph": { "variant": "duotone", "icons": ["house", "airplane-taxiing"] },
-  "lucide": { "icons": ["house", { "name": "menu", "as": "Hamburger" }] }
+	"ph": { "variant": "duotone", "icons": ["house", "airplane-taxiing"] },
+	"lucide": { "icons": ["house", { "name": "menu", "as": "Hamburger" }] },
 }
 ```
 
