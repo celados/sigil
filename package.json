@@ -7,6 +7,7 @@
 	},
 	"type": "module",
 	"scripts": {
+		"build": "./scripts/build.sh",
 		"check": "bun run typecheck && bun test && bun run fmt:check",
 		"test": "bun test",
 		"typecheck": "tsgo --noEmit",

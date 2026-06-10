@@ -12,6 +12,27 @@ sigil etch --output src/icons.tsx --jsx react     # generate a component module
 sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
 ```
 
+## Install
+
+Install the latest release:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ethan-huo/sigil/main/install.sh | bash
+```
+
+The installer downloads the executable JS bundle from GitHub Releases to
+`~/.local/bin/sigil`. Set `SIGIL_INSTALL_DIR` to choose another directory, or
+`--version <tag>` to pin a release.
+
+Requirements: [Bun](https://bun.sh) (the bundle runs on the Bun runtime) and
+`git` (used to vendor icon libraries on `use`).
+
+Or run from source with Bun:
+
+```sh
+bun add github:ethan-huo/sigil   # then `bunx sigil ...`
+```
+
 ## How it works
 
 - **use → search → add → etch**, modeled on a package manager: declare which
