@@ -1,0 +1,22 @@
+{
+	"$schema": "https://raw.githubusercontent.com/oxc-project/oxc/refs/heads/main/npm/oxfmt/configuration_schema.json",
+	"printWidth": 80,
+	"singleQuote": true,
+	"jsxSingleQuote": false,
+	"semi": false,
+	"useTabs": true,
+	"tabWidth": 2,
+	"jsdoc": true,
+	"sortImports": {
+		"groups": [
+			["type-builtin", "type-external"],
+			["builtin", "external"],
+			["type-internal", "type-subpath", "internal", "subpath"],
+			["type-parent", "type-sibling", "type-index"],
+			["parent", "sibling", "index"],
+			["side_effect", "side_effect_style", "style"]
+		]
+	},
+	"sortPackageJson": true,
+	"ignorePatterns": ["node_modules", "dist", "*.lock"]
+}
