@@ -51,6 +51,16 @@ Grouped by set; `variant` and `prefix` are set-level design decisions:
 
 See [docs/design.md](./docs/design.md) for the full design.
 
+## Agent skill
+
+A single [`SKILL.md`](./skills/sigil/SKILL.md) teaches coding agents the
+library-first workflow. Install it with the [skill](https://github.com/ethan-huo/skill)
+manager:
+
+```sh
+skill add ethan-huo/sigil
+```
+
 ## Develop
 
 ```sh
