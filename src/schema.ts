@@ -93,18 +93,19 @@ export const schema = {
 	etch: c
 		.meta({
 			description:
-				'Generate icon files from the manifest. Without --jsx dumps one .svg per icon; with --jsx emits a single component module.',
+				'Generate icon files from the manifest. Without --jsx dumps one .svg per icon; with --jsx emits a single component module (tsrx → .tsrx, others → .tsx).',
 			examples: [
 				'sigil etch --output public/svg',
 				'sigil etch --output src/components/icons.tsx --jsx react',
 				'sigil etch --output src/components --jsx solid',
+				'sigil etch --output src/components --jsx tsrx',
 			],
 		})
 		.input(
 			s(
 				v.object({
 					output: v.string(),
-					jsx: v.optional(v.picklist(['react', 'solid'])),
+					jsx: v.optional(v.picklist(['react', 'solid', 'tsrx'])),
 				}),
 			),
 		),

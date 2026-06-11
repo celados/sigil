@@ -399,7 +399,7 @@ app.run({
 
 			if (renderer.defaultFile) {
 				// format 由 --jsx 决定,path 只管位置:带代码扩展名视为文件,否则视为目录
-				const out = /\.[cm]?[tj]sx?$/.test(input.output)
+				const out = /\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)
 					? input.output
 					: join(input.output, renderer.defaultFile)
 				mkdirSync(dirname(out), { recursive: true })

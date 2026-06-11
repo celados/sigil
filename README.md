@@ -9,8 +9,12 @@ sigil search house                           # scoped to declared libraries, off
 sigil search github --all                    # global discovery (200+ sets via Iconify)
 sigil add lucide/house+menu,svgl/github      # record in icons.json
 sigil etch --output src/icons.tsx --jsx react     # generate a component module
+sigil etch --output src/icons --jsx tsrx          # ripple-ts → src/icons.tsrx
 sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
 ```
+
+`--jsx` targets: `react`, `solid`, `tsrx` ([ripple-ts](https://tsrx.dev)). Without
+`--jsx`, etch dumps one `.svg` file per icon.
 
 ## Install
 

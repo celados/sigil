@@ -57,11 +57,13 @@ yet know which library to use.
    `sigil add lucide/house+menu+gear,svgl/github`. (`add` will auto-declare an
    undeclared library, but `use` is the explicit path.)
 
-5. **`sigil etch --output <path> [--jsx react|solid]`** — generate. This is the
-   step that produces usable code:
+5. **`sigil etch --output <path> [--jsx react|solid|tsrx]`** — generate. This is
+   the step that produces usable code:
    - no `--jsx` → dumps one `.svg` file per icon into the directory
-   - `--jsx react` / `--jsx solid` → one component module (a path without a code
-     extension gets `/icons.tsx` appended)
+   - `--jsx react` / `--jsx solid` → one `.tsx` component module
+   - `--jsx tsrx` → one `.tsrx` module ([ripple-ts](https://tsrx.dev))
+   - a path without a code extension gets the module file name appended
+     (`icons.tsx` / `icons.tsrx`)
 
 6. **Verify** when the user asked for concrete setup: run `sigil list` to
    confirm the manifest, and make sure the generated file is imported where it's
