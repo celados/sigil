@@ -4,6 +4,7 @@ Agent-friendly icon package manager. Manage icons like dependencies: declare
 them in a manifest, and codegen is a pure projection of it.
 
 ```sh
+sigil sources                                  # list supported libraries/sources
 sigil use lucide svgl                        # declare libraries + vendor locally
 sigil search house                           # scoped to declared libraries, offline
 sigil search github --all                    # global discovery (200+ sets via Iconify)
@@ -51,9 +52,10 @@ bun add github:celados/sigil   # then `bunx sigil ...`
   `regular` or `duotone`), so switching a set's variant is a one-line manifest
   change with zero import churn.
 
-Bundled adapters: `lucide`, `heroicons`, `tabler`, `ph`, `simple-icons`. Any
-other set falls back to the Iconify API with identical naming, so refs stay
-portable.
+Run `sigil sources` to see the supported sources. Bundled adapters are
+`heroicons`, `lucide`, `ph`, `simple-icons`, `svgl`, and `tabler`; any other set
+falls back to the Iconify API with identical naming, so refs stay portable.
+`sigil use` without arguments prints the same source list for quick discovery.
 
 ## Ref DSL
 

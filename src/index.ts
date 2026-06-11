@@ -21,7 +21,7 @@ import { renderers } from './render/registry.ts'
 import { resolveRefs } from './resolve.ts'
 import { app } from './schema.ts'
 import { iconifySource } from './source/iconify.ts'
-import { sourceFor } from './source/registry.ts'
+import { bundledSourceSets, sourceFor } from './source/registry.ts'
 
 function fail(message: string): never {
 	console.error(`sigil: ${message}`)
@@ -96,9 +96,63 @@ async function resolveManifest(
 	})
 }
 
+function sourceRows(vendorRoot: string) {
+	const bundled = bundledSourceSets.map((set) => {
+		const source = sourceFor(set, vendorRoot)
+		return {
+			set,
+			prefix: source.prefix(set),
+			...(source.defaultVariant
+				? { defaultVariant: source.defaultVariant }
+				: {}),
+			mode: 'bundled' as const,
+		}
+	})
+	return {
+		bundled,
+		fallback: {
+			set: '<iconify-set>',
+			prefix: 'derived',
+			mode: 'iconify-api' as const,
+		},
+	}
+}
+
+function printSources(vendorRoot: string, json = false) {
+	const sources = sourceRows(vendorRoot)
+	if (json) {
+		console.log(JSON.stringify(sources))
+		return
+	}
+
+	console.log('Bundled sources (vendored locally after `sigil use <set>`):')
+	const width = Math.max(...sources.bundled.map((source) => source.set.length))
+	for (const source of sources.bundled) {
+		const annotations = [
+			source.prefix,
+			...(source.defaultVariant
+				? [`defaultVariant=${source.defaultVariant}`]
+				: []),
+		].join(' · ')
+		console.log(`  ${source.set.padEnd(width)}  ${annotations}`)
+	}
+	console.log('')
+	console.log('Fallback:')
+	console.log(
+		'  <iconify-set>  any Iconify collection via API; prefix is derived',
+	)
+}
+
 app.run({
 	handlers: {
 		use: async ({ input, context }) => {
+			if (input.sets.length === 0) {
+				if (input.variant || input.prefix) {
+					fail('--variant/--prefix require a set')
+				}
+				printSources(context.vendorRoot)
+				return
+			}
 			if ((input.variant || input.prefix) && input.sets.length !== 1) {
 				fail('--variant/--prefix require exactly one set')
 			}
@@ -127,6 +181,10 @@ app.run({
 					`+ using ${set} (${manifest[set]?.prefix ?? source.prefix(set)}) · ${mode}`,
 				)
 			}
+		},
+
+		sources: async ({ input, context }) => {
+			printSources(context.vendorRoot, input.json)
 		},
 
 		search: async ({ input, context }) => {

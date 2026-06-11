@@ -24,6 +24,8 @@ const factories: Record<string, (dir: string) => IconSource> = {
 	tabler: createTablerSource,
 }
 
+export const bundledSourceSets = Object.keys(factories).sort()
+
 export function sourceFor(set: string, vendorRoot: string): IconSource {
 	const factory = factories[set]
 	return factory ? factory(join(vendorRoot, set)) : iconifySource

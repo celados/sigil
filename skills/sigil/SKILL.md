@@ -36,6 +36,14 @@ Once libraries are declared, `search`/`add`/`etch` run fully offline against a
 local vendored copy. Reach for global discovery (`--all`) only when you don't
 yet know which library to use.
 
+If you do not know which library/source to use, run:
+
+```bash
+sigil sources
+```
+
+`sigil use` with no arguments prints the same source list.
+
 ## Primary Workflow
 
 1. **Read project context first.** What's the stack (React/Solid)? Is there

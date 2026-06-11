@@ -19,3 +19,5 @@
 - **bin 分发**:`bin` 指向 `src/index.ts`(bun-only)。npm 发布需 build。
 - **heroicons 16px 缺口**(上游事实,非 bug):8 个图标无 16px 版本,
   resolve 时走 missing 路径,与 Iconify collection 一致。
+- **`use` 交互选择器**:`sigil sources` 和裸 `sigil use` 已覆盖非交互发现;
+  如面向人类终端再增强,可给裸 `use` 接 prompt selector。

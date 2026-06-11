@@ -15,18 +15,27 @@ export const schema = {
 				'sigil use lucide',
 				'sigil use lucide svgl',
 				'sigil use ph --variant duotone',
+				'sigil use',
 			],
 		})
 		.args('sets...')
 		.input(
 			s(
 				v.object({
-					sets: v.pipe(v.array(v.string()), v.minLength(1)),
+					sets: v.array(v.string()),
 					variant: v.optional(v.string()),
 					prefix: v.optional(v.string()),
 				}),
 			),
 		),
+
+	sources: c
+		.meta({
+			description:
+				'List supported icon sources. Bundled sources vendor locally; every other Iconify set is supported through the API fallback.',
+			examples: ['sigil sources', 'sigil sources --json'],
+		})
+		.input(s(v.object({ json: v.optional(v.boolean(), false) }))),
 
 	search: c
 		.meta({
