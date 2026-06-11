@@ -21,7 +21,7 @@ sigil etch --output public/svg                    # no --jsx → dump one .svg p
 Install the latest release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ethan-huo/sigil/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/celados/sigil/main/install.sh | bash
 ```
 
 The installer downloads the executable JS bundle from GitHub Releases to
@@ -34,7 +34,7 @@ Requirements: [Bun](https://bun.sh) (the bundle runs on the Bun runtime) and
 Or run from source with Bun:
 
 ```sh
-bun add github:ethan-huo/sigil   # then `bunx sigil ...`
+bun add github:celados/sigil   # then `bunx sigil ...`
 ```
 
 ## How it works
@@ -83,7 +83,7 @@ library-first workflow. Install it with the [skill](https://github.com/ethan-huo
 manager:
 
 ```sh
-skill add ethan-huo/sigil
+skill add celados/sigil
 ```
 
 ## Develop

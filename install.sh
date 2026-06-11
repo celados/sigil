@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${SIGIL_REPO:-ethan-huo/sigil}"
+REPO="${SIGIL_REPO:-celados/sigil}"
 VERSION="${SIGIL_VERSION:-latest}"
 BIN_DIR="${SIGIL_INSTALL_DIR:-$HOME/.local/bin}"
 
@@ -15,7 +15,7 @@ Requires the Bun runtime (https://bun.sh) on PATH.
 Options:
   --dir DIR          Install directory. Default: $SIGIL_INSTALL_DIR or ~/.local/bin.
   --version VERSION  Release version or tag. Default: $SIGIL_VERSION or latest.
-  --repo OWNER/REPO  GitHub repository. Default: $SIGIL_REPO or ethan-huo/sigil.
+  --repo OWNER/REPO  GitHub repository. Default: $SIGIL_REPO or celados/sigil.
   -h, --help         Show this help.
 USAGE
 }
