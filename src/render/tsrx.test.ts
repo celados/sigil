@@ -22,14 +22,15 @@ describe('tsrxRenderer', () => {
 		expect(file!.path).toBe('icons.tsrx')
 	})
 
-	test('component is a plain TS function with lazy-destructured props', () => {
+	test('component uses the @{ } code-block body with a default-valued lazy prop', () => {
 		expect(file!.content).toContain(
-			'export function LuHouse(&{ size, ...props }: IconProps) {',
+			"export function LuHouse(&{ size = '1em', ...props }: IconProps) @{",
 		)
-		expect(file!.content).toContain('return (')
-		expect(file!.content).toContain(
-			"width={size ?? '1em'} height={size ?? '1em'}",
-		)
+		// @{ } body emits the markup as the trailing output node — no return.
+		expect(file!.content).not.toContain('return (')
+		// default lives in the param, so the JSX attr is a bare `size`
+		expect(file!.content).toContain('width={size} height={size}')
+		expect(file!.content).not.toContain("?? '1em'")
 		expect(file!.content).toContain('viewBox="0 0 24 24"')
 		expect(file!.content).toContain('{...props}')
 	})
@@ -41,8 +42,11 @@ describe('tsrxRenderer', () => {
 		expect(file!.content).not.toContain('className')
 	})
 
-	test('header declares IconProps with size and a passthrough index', () => {
-		expect(file!.content).toContain('export type IconProps = {')
-		expect(file!.content).toContain('size?: number | string')
+	test('header types IconProps off Ripple’s svg intrinsic attrs plus size', () => {
+		expect(file!.content).toContain(
+			"export type IconProps = JSX.IntrinsicElements['svg'] & { size?: number | string }",
+		)
+		// no loose escape hatch
+		expect(file!.content).not.toContain('[attr: string]: unknown')
 	})
 })
