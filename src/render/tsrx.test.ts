@@ -49,4 +49,26 @@ describe('tsrxRenderer', () => {
 		// no loose escape hatch
 		expect(file!.content).not.toContain('[attr: string]: unknown')
 	})
+
+	test('atlas emits a TSRX sidecar with native style block', () => {
+		const [iconsFile, atlasFile] = tsrxRenderer.render([icon], {
+			atlas: true,
+			atlasFileName: 'icons.atlas.tsrx',
+			atlasImportPath: './icons',
+		})
+
+		expect(iconsFile!.content).not.toContain('IconAtlas')
+		expect(atlasFile!.path).toBe('icons.atlas.tsrx')
+		expect(atlasFile!.content).toContain("import { track } from 'ripple'")
+		expect(atlasFile!.content).toContain("import { LuHouse } from './icons'")
+		expect(atlasFile!.content).toContain('export function IconAtlas')
+		expect(atlasFile!.content).toContain('<style>')
+		expect(atlasFile!.content).toContain('.sigil-atlas')
+		expect(atlasFile!.content).toContain(
+			'@for (const item of items(); key item.ref)',
+		)
+		expect(atlasFile!.content).toContain(
+			'<{item.Icon} class="sigil-atlas__icon"',
+		)
+	})
 })

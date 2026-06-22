@@ -11,6 +11,8 @@ export type RenderedFile = { path: string; content: string }
 
 export type RenderOptions = {
 	readonly atlas?: boolean
+	readonly atlasFileName?: string
+	readonly atlasImportPath?: string
 }
 
 export interface Renderer {

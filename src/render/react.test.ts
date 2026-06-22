@@ -49,16 +49,33 @@ describe('reactRenderer atlas', () => {
 	})
 
 	test('emits a searchable preview component when requested', () => {
-		const [file] = reactRenderer.render([icon], { atlas: true })
+		const [iconsFile, atlasFile] = reactRenderer.render([icon], {
+			atlas: true,
+			atlasFileName: 'icons.atlas.tsx',
+			atlasImportPath: './icons',
+		})
 
-		expect(file!.content).toContain("import { useMemo, useState } from 'react'")
-		expect(file!.content).toContain('export const iconAtlasItems')
-		expect(file!.content).toContain(
+		expect(iconsFile!.content).not.toContain('IconAtlas')
+		expect(atlasFile!.path).toBe('icons.atlas.tsx')
+		expect(atlasFile!.content).toContain(
+			"import { useEffect, useMemo, useRef, useState } from 'react'",
+		)
+		expect(atlasFile!.content).toContain("import { LuHouse } from './icons'")
+		expect(atlasFile!.content).toContain(
+			"import type { IconProps } from './icons'",
+		)
+		expect(atlasFile!.content).toContain('const iconAtlasCss = ".sigil-atlas')
+		expect(atlasFile!.content).toContain('export const iconAtlasItems')
+		expect(atlasFile!.content).toContain(
 			'{ ref: "lucide/house", name: "house", componentName: "LuHouse", Icon: LuHouse }',
 		)
-		expect(file!.content).toContain('export const IconAtlas')
-		expect(file!.content).toContain(
+		expect(atlasFile!.content).toContain('export const IconAtlas')
+		expect(atlasFile!.content).toContain(
 			'placeholder={`Search ${iconAtlasItems.length} icons...`}',
 		)
+		expect(atlasFile!.content).toContain(
+			'navigator.clipboard.writeText(item.ref)',
+		)
+		expect(atlasFile!.content).toContain('No icons match your search.')
 	})
 })

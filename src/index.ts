@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { basename, dirname, extname, join } from 'node:path'
 
 import type { FlatEntry, Manifest } from './manifest.ts'
 import type { IconRef } from './ref.ts'
@@ -26,6 +26,17 @@ import { bundledSourceSets, sourceFor } from './source/registry.ts'
 function fail(message: string): never {
 	console.error(`sigil: ${message}`)
 	process.exit(1)
+}
+
+function atlasFileNameFor(out: string): string {
+	const ext = extname(out)
+	const base = basename(out, ext)
+	return `${base}.atlas${ext}`
+}
+
+function importPathFor(out: string): string {
+	const ext = extname(out)
+	return `./${basename(out, ext)}`
 }
 
 /** 网络/API 错误统一收口为 CLI 错误消息,不漏 stack trace */
@@ -451,22 +462,35 @@ app.run({
 			if (!manifest || flatten(manifest).length === 0) {
 				fail('manifest is empty — run `sigil add <set>/<name>` first')
 			}
-			if (input.atlas && input.jsx !== 'react' && input.jsx !== 'solid') {
-				fail('--atlas requires --jsx react or --jsx solid')
+			if (input.atlas && !input.jsx) {
+				fail('--atlas requires --jsx react, --jsx solid, or --jsx tsrx')
 			}
 			const named = await resolveManifest(manifest, context.vendorRoot)
 			const renderer = renderers[input.jsx ?? 'svg']!
-			const files = renderer.render(named, { atlas: input.atlas })
 
 			if (renderer.defaultFile) {
 				// format 由 --jsx 决定,path 只管位置:带代码扩展名视为文件,否则视为目录
 				const out = /\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)
 					? input.output
 					: join(input.output, renderer.defaultFile)
+				const files = renderer.render(named, {
+					atlas: input.atlas,
+					atlasFileName: atlasFileNameFor(out),
+					atlasImportPath: importPathFor(out),
+				})
 				mkdirSync(dirname(out), { recursive: true })
 				writeFileSync(out, files[0]!.content)
-				console.log(`etched ${named.length} icons → ${out}`)
+				const extraFiles = files.slice(1)
+				for (const file of extraFiles) {
+					writeFileSync(join(dirname(out), file.path), file.content)
+				}
+				const suffix =
+					extraFiles.length > 0
+						? ` + ${extraFiles.map((file) => join(dirname(out), file.path)).join(', ')}`
+						: ''
+				console.log(`etched ${named.length} icons → ${out}${suffix}`)
 			} else {
+				const files = renderer.render(named)
 				mkdirSync(input.output, { recursive: true })
 				for (const file of files) {
 					writeFileSync(join(input.output, file.path), file.content)

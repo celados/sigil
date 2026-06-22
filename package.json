@@ -1,6 +1,6 @@
 {
 	"name": "sigil",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"description": "Agent-friendly icon package manager: search, add, etch",
 	"bin": {
 		"sigil": "./src/index.ts"

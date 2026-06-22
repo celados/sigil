@@ -1,0 +1,214 @@
+.sigil-atlas {
+	--sigil-atlas-bg: #ffffff;
+	--sigil-atlas-text: #171717;
+	--sigil-atlas-muted: #737373;
+	--sigil-atlas-border: #e5e5e5;
+	--sigil-atlas-panel: #fafafa;
+	--sigil-atlas-panel-hover: #f5f5f5;
+	--sigil-atlas-accent: #ef4444;
+	box-sizing: border-box;
+	min-height: 100%;
+	padding: 24px;
+	color: var(--sigil-atlas-text);
+	background: var(--sigil-atlas-bg);
+	font-family:
+		ui-sans-serif,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		sans-serif;
+}
+
+.sigil-atlas * {
+	box-sizing: border-box;
+}
+
+.sigil-atlas__bar {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 12px;
+	align-items: center;
+	padding-block: 4px 18px;
+	background: color-mix(in srgb, var(--sigil-atlas-bg) 92%, transparent);
+	backdrop-filter: blur(10px);
+}
+
+.sigil-atlas__title {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 650;
+	line-height: 1.2;
+}
+
+.sigil-atlas__count {
+	color: var(--sigil-atlas-muted);
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.sigil-atlas__search-wrap {
+	grid-column: 1 / -1;
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.sigil-atlas__search {
+	width: 100%;
+	height: 52px;
+	border: 1px solid var(--sigil-atlas-border);
+	border-radius: 8px;
+	padding: 0 88px 0 70px;
+	color: inherit;
+	background: var(--sigil-atlas-panel);
+	font: inherit;
+	font-size: 16px;
+	outline: none;
+	transition:
+		border-color 120ms ease,
+		background-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.sigil-atlas__search:hover,
+.sigil-atlas__search:focus {
+	border-color: var(--sigil-atlas-accent);
+	background: var(--sigil-atlas-bg);
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--sigil-atlas-accent) 16%, transparent);
+}
+
+.sigil-atlas__search-icon {
+	position: absolute;
+	left: 14px;
+	color: var(--sigil-atlas-muted);
+	font-size: 12px;
+	pointer-events: none;
+}
+
+.sigil-atlas__shortcut {
+	position: absolute;
+	right: 12px;
+	border: 1px solid var(--sigil-atlas-border);
+	border-radius: 6px;
+	padding: 2px 6px;
+	color: var(--sigil-atlas-muted);
+	background: var(--sigil-atlas-bg);
+	font-size: 12px;
+}
+
+.sigil-atlas__clear {
+	position: absolute;
+	right: 50px;
+	border: 0;
+	padding: 4px 6px;
+	color: var(--sigil-atlas-muted);
+	background: transparent;
+	cursor: pointer;
+	font: inherit;
+}
+
+.sigil-atlas__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+	gap: 8px;
+}
+
+.sigil-atlas__tile {
+	position: relative;
+	display: grid;
+	place-items: center;
+	gap: 8px;
+	aspect-ratio: 1 / 1;
+	min-width: 0;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	padding: 10px 8px 8px;
+	color: inherit;
+	background: var(--sigil-atlas-panel);
+	cursor: pointer;
+	transition:
+		border-color 120ms ease,
+		background-color 120ms ease,
+		transform 120ms ease;
+}
+
+.sigil-atlas__tile:hover,
+.sigil-atlas__tile:focus-visible {
+	border-color: var(--sigil-atlas-accent);
+	background: var(--sigil-atlas-panel-hover);
+	transform: translateY(-1px);
+	outline: none;
+}
+
+.sigil-atlas__tile[data-copied='true'] {
+	border-color: var(--sigil-atlas-accent);
+}
+
+.sigil-atlas__icon {
+	width: 28px;
+	height: 28px;
+	color: currentColor;
+}
+
+.sigil-atlas__label {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--sigil-atlas-muted);
+	font-size: 11px;
+	line-height: 1.2;
+}
+
+.sigil-atlas__copied {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	border-radius: 999px;
+	padding: 2px 6px;
+	color: #ffffff;
+	background: var(--sigil-atlas-accent);
+	font-size: 10px;
+	line-height: 1.2;
+}
+
+.sigil-atlas__empty {
+	display: grid;
+	place-items: center;
+	min-height: 220px;
+	border: 1px dashed var(--sigil-atlas-border);
+	border-radius: 8px;
+	color: var(--sigil-atlas-muted);
+	background: var(--sigil-atlas-panel);
+	text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+	.sigil-atlas {
+		--sigil-atlas-bg: #0a0a0a;
+		--sigil-atlas-text: #ededed;
+		--sigil-atlas-muted: #a3a3a3;
+		--sigil-atlas-border: #262626;
+		--sigil-atlas-panel: #171717;
+		--sigil-atlas-panel-hover: #1f1f1f;
+	}
+}
+
+@media (max-width: 640px) {
+	.sigil-atlas {
+		padding: 16px;
+	}
+
+	.sigil-atlas__bar {
+		grid-template-columns: 1fr;
+	}
+
+	.sigil-atlas__count {
+		white-space: normal;
+	}
+}
