@@ -3,6 +3,8 @@ import { c, cli } from 'argc'
 import { dirname, join, resolve } from 'node:path'
 import * as v from 'valibot'
 
+import packageJson from '../package.json' with { type: 'json' }
+
 const s = toStandardJsonSchema
 
 // ref 语法统一为 <set>/<name>(也接受 <set>:<name>)
@@ -124,7 +126,7 @@ export const schema = {
 
 export const app = cli(schema, {
 	name: 'sigil',
-	version: '0.1.0',
+	version: packageJson.version,
 	description: 'Agent-friendly icon package manager: search → add → etch',
 	globals: s(
 		v.object({
