@@ -9,11 +9,15 @@ export type NamedIcon = ResolvedIcon & {
 /** Path 相对于输出目录;模块型 renderer 返回单文件,CLI 可用 -o 覆盖其位置 */
 export type RenderedFile = { path: string; content: string }
 
+export type RenderOptions = {
+	readonly atlas?: boolean
+}
+
 export interface Renderer {
 	readonly id: string
 	/** 模块型 renderer 的默认文件名;null 表示逐图标输出 */
 	readonly defaultFile: string | null
-	render(icons: NamedIcon[]): RenderedFile[]
+	render(icons: NamedIcon[], options?: RenderOptions): RenderedFile[]
 }
 
 export function licenseTag(icon: NamedIcon): string {

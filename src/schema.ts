@@ -106,6 +106,7 @@ export const schema = {
 			examples: [
 				'sigil etch --output public/svg',
 				'sigil etch --output src/components/icons.tsx --jsx react',
+				'sigil etch --output src/components/icons.tsx --jsx react --atlas',
 				'sigil etch --output src/components --jsx solid',
 				'sigil etch --output src/components --jsx tsrx',
 			],
@@ -115,6 +116,7 @@ export const schema = {
 				v.object({
 					output: v.string(),
 					jsx: v.optional(v.picklist(['react', 'solid', 'tsrx'])),
+					atlas: v.optional(v.boolean(), false),
 				}),
 			),
 		),

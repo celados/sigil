@@ -451,9 +451,12 @@ app.run({
 			if (!manifest || flatten(manifest).length === 0) {
 				fail('manifest is empty — run `sigil add <set>/<name>` first')
 			}
+			if (input.atlas && input.jsx !== 'react' && input.jsx !== 'solid') {
+				fail('--atlas requires --jsx react or --jsx solid')
+			}
 			const named = await resolveManifest(manifest, context.vendorRoot)
 			const renderer = renderers[input.jsx ?? 'svg']!
-			const files = renderer.render(named)
+			const files = renderer.render(named, { atlas: input.atlas })
 
 			if (renderer.defaultFile) {
 				// format 由 --jsx 决定,path 只管位置:带代码扩展名视为文件,否则视为目录

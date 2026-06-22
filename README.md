@@ -10,12 +10,15 @@ sigil search house                           # scoped to declared libraries, off
 sigil search github --all                    # global discovery (200+ sets via Iconify)
 sigil add lucide/house+menu,svgl/github      # record in icons.json
 sigil etch --output src/icons.tsx --jsx react     # generate a component module
+sigil etch --output src/icons.tsx --jsx react --atlas  # add a searchable preview component
 sigil etch --output src/icons --jsx tsrx          # ripple-ts → src/icons.tsrx
 sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
 ```
 
 `--jsx` targets: `react`, `solid`, `tsrx` ([ripple-ts](https://tsrx.dev)). Without
-`--jsx`, etch dumps one `.svg` file per icon.
+`--jsx`, etch dumps one `.svg` file per icon. Add `--atlas` with `--jsx react`
+or `--jsx solid` to export a searchable `IconAtlas` preview component alongside
+the generated icons.
 
 ## Install
 
