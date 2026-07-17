@@ -54,6 +54,10 @@ function prefixFor(manifest: Manifest, vendorRoot: string) {
 		manifest[set]?.prefix ?? sourceFor(set, vendorRoot).prefix(set)
 }
 
+function cssModeFor(manifest: Manifest, set: string, vendorRoot: string) {
+	return manifest[set]?.cssMode ?? sourceFor(set, vendorRoot).cssMode?.(set)
+}
+
 /** Base 名 + set.variant → 上游实际 ref */
 function effectiveRef(
 	manifest: Manifest,
@@ -103,6 +107,7 @@ async function resolveManifest(
 			...resolved,
 			componentName: component,
 			fileName: kebabCase(component),
+			cssMode: cssModeFor(manifest, entry.set, vendorRoot),
 		}
 	})
 }
@@ -110,9 +115,11 @@ async function resolveManifest(
 function sourceRows(vendorRoot: string) {
 	const bundled = bundledSourceSets.map((set) => {
 		const source = sourceFor(set, vendorRoot)
+		const cssMode = source.cssMode?.(set)
 		return {
 			set,
 			prefix: source.prefix(set),
+			...(cssMode ? { cssMode } : {}),
 			...(source.defaultVariant
 				? { defaultVariant: source.defaultVariant }
 				: {}),
@@ -124,6 +131,7 @@ function sourceRows(vendorRoot: string) {
 		fallback: {
 			set: '<iconify-set>',
 			prefix: 'derived',
+			cssMode: 'manifest-required',
 			mode: 'iconify-api' as const,
 		},
 	}
@@ -141,6 +149,7 @@ function printSources(vendorRoot: string, json = false) {
 	for (const source of sources.bundled) {
 		const annotations = [
 			source.prefix,
+			...(source.cssMode ? [`cssMode=${source.cssMode}`] : []),
 			...(source.defaultVariant
 				? [`defaultVariant=${source.defaultVariant}`]
 				: []),
@@ -158,14 +167,17 @@ app.run({
 	handlers: {
 		use: async ({ input, context }) => {
 			if (input.sets.length === 0) {
-				if (input.variant || input.prefix) {
-					fail('--variant/--prefix require a set')
+				if (input.variant || input.prefix || input.cssMode) {
+					fail('--variant/--prefix/--css-mode require a set')
 				}
 				printSources(context.vendorRoot)
 				return
 			}
-			if ((input.variant || input.prefix) && input.sets.length !== 1) {
-				fail('--variant/--prefix require exactly one set')
+			if (
+				(input.variant || input.prefix || input.cssMode) &&
+				input.sets.length !== 1
+			) {
+				fail('--variant/--prefix/--css-mode require exactly one set')
 			}
 			const manifest = loadManifest(context.manifestPath) ?? defaultManifest()
 			for (const set of input.sets) {
@@ -175,6 +187,7 @@ app.run({
 				const config = (manifest[set] ??= { icons: [] })
 				if (input.variant) config.variant = input.variant
 				if (input.prefix) config.prefix = input.prefix
+				if (input.cssMode) config.cssMode = input.cssMode
 			}
 			saveManifest(context.manifestPath, manifest)
 			// use = 显式 provision:并发 clone 全部声明的库
@@ -418,13 +431,17 @@ app.run({
 				console.error('manifest is empty — run `sigil use <set>`')
 				return
 			}
-			const libraries = used.map((set) => ({
-				set,
-				...(manifest[set]?.variant ? { variant: manifest[set].variant } : {}),
-				prefix:
-					manifest[set]?.prefix ??
-					sourceFor(set, context.vendorRoot).prefix(set),
-			}))
+			const libraries = used.map((set) => {
+				const cssMode = cssModeFor(manifest, set, context.vendorRoot)
+				return {
+					set,
+					...(manifest[set]?.variant ? { variant: manifest[set].variant } : {}),
+					...(cssMode ? { cssMode } : {}),
+					prefix:
+						manifest[set]?.prefix ??
+						sourceFor(set, context.vendorRoot).prefix(set),
+				}
+			})
 			const entries = flatten(manifest)
 			const rows = entries.map((entry) => {
 				const eff = effectiveRef(manifest, entry, context.vendorRoot)
@@ -442,6 +459,7 @@ app.run({
 			for (const lib of libraries) {
 				const annotations = [
 					lib.prefix,
+					...(lib.cssMode ? [`cssMode=${lib.cssMode}`] : []),
 					...(lib.variant ? [`variant=${lib.variant}`] : []),
 				].join(' · ')
 				console.log(`${lib.set} (${annotations})`)
@@ -465,19 +483,30 @@ app.run({
 			if (input.atlas && !input.jsx) {
 				fail('--atlas requires --jsx react, --jsx solid, or --jsx tsrx')
 			}
+			if (input.format && input.jsx) {
+				fail('--format and --jsx cannot be combined')
+			}
 			const named = await resolveManifest(manifest, context.vendorRoot)
-			const renderer = renderers[input.jsx ?? 'svg']!
+			const renderer = renderers[input.format ?? input.jsx ?? 'svg']!
 
 			if (renderer.defaultFile) {
-				// format 由 --jsx 决定,path 只管位置:带代码扩展名视为文件,否则视为目录
-				const out = /\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)
+				// CSS 与组件模块各自只认自己的文件后缀，避免把带点号的目录误判成文件。
+				const outputIsFile = input.format
+					? extname(input.output) === '.css'
+					: /\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)
+				const out = outputIsFile
 					? input.output
 					: join(input.output, renderer.defaultFile)
-				const files = renderer.render(named, {
-					atlas: input.atlas,
-					atlasFileName: atlasFileNameFor(out),
-					atlasImportPath: importPathFor(out),
-				})
+				let files
+				try {
+					files = renderer.render(named, {
+						atlas: input.atlas,
+						atlasFileName: atlasFileNameFor(out),
+						atlasImportPath: importPathFor(out),
+					})
+				} catch (e) {
+					fail((e as Error).message)
+				}
 				mkdirSync(dirname(out), { recursive: true })
 				writeFileSync(out, files[0]!.content)
 				const extraFiles = files.slice(1)

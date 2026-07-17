@@ -1,0 +1,12 @@
+{
+	"lucide": {
+		"icons": ["house"]
+	},
+	"ph": {
+		"variant": "duotone",
+		"icons": ["circles-three-plus"]
+	},
+	"svgl": {
+		"icons": ["google"]
+	}
+}

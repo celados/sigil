@@ -63,6 +63,7 @@ export function createHeroiconsSource(dir: string): IconSource {
 		id: 'heroicons',
 		// Iconify fallback 推导规则:单词取头两字母 → "He"
 		prefix: () => 'He',
+		cssMode: () => 'mask',
 		// 24px outline 是无后缀 variant;其余 variant:solid / 20-solid / 16-solid
 		defaultVariant: 'outline',
 		vendored: () => existsSync(outlineDir),

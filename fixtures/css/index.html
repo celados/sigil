@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Sigil CSS fixture</title>
+		<link rel="stylesheet" href="./icons.css" />
+		<style>
+			body {
+				font: 16px system-ui;
+				color: #1d4ed8;
+			}
+
+			.demo {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				padding: 1rem;
+			}
+
+			.icon-24 {
+				font-size: 24px;
+			}
+
+			.icon-48 {
+				font-size: 48px;
+			}
+
+			.dark {
+				color: #f8fafc;
+				background: #0f172a;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Sigil CSS fixture</h1>
+
+		<section class="demo" data-theme="light">
+			<span class="sigil sigil-lu-house icon-24" aria-hidden="true"></span>
+			<span class="sigil sigil-lu-house icon-48" aria-hidden="true"></span>
+			<span
+				class="sigil sigil-ph-circles-three-plus icon-48"
+				aria-hidden="true"
+			></span>
+			<span class="sigil sigil-sv-google icon-48" aria-hidden="true"></span>
+		</section>
+
+		<section class="demo dark" data-theme="dark">
+			<button aria-label="Home">
+				<span class="sigil sigil-lu-house icon-24" aria-hidden="true"></span>
+			</button>
+			<span
+				class="sigil sigil-ph-circles-three-plus icon-48"
+				aria-hidden="true"
+			></span>
+			<span class="sigil sigil-sv-google icon-48" aria-hidden="true"></span>
+		</section>
+	</body>
+</html>

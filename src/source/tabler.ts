@@ -37,6 +37,7 @@ export function createTablerSource(dir: string): IconSource {
 		id: 'tabler',
 		// Iconify fallback 推导规则:单词取头两字母 → `Ta`
 		prefix: () => 'Ta',
+		cssMode: () => 'mask',
 		// outline 是无后缀 variant;filled 子集较小,缺失走 missing 报错
 		defaultVariant: 'outline',
 		vendored: () => existsSync(outlineDir),

@@ -9,6 +9,7 @@ sigil use lucide svgl                        # declare libraries + vendor locall
 sigil search house                           # scoped to declared libraries, offline
 sigil search github --all                    # global discovery (200+ sets via Iconify)
 sigil add lucide/house+menu,svgl/github      # record in icons.json
+sigil etch --output public/icons.css --format css  # standalone HTML / file://
 sigil etch --output src/icons.tsx --jsx react     # generate a component module
 sigil etch --output src/icons.tsx --jsx react --atlas  # also generate src/icons.atlas.tsx
 sigil etch --output src/icons --jsx tsrx --atlas        # also generate src/icons.atlas.tsrx
@@ -21,6 +22,22 @@ sigil etch --output public/svg                    # no --jsx → dump one .svg p
 `--jsx solid`, or `--jsx tsrx` to generate a sidecar preview module
 (`icons.atlas.tsx` or `icons.atlas.tsrx`) that exports a searchable `IconAtlas`
 component.
+
+`--format css` emits one self-contained stylesheet for standalone HTML,
+including documents opened directly through `file://`:
+
+```html
+<link rel="stylesheet" href="./icons.css" />
+<span class="sigil sigil-lu-house" aria-hidden="true"></span>
+
+<button aria-label="Home">
+	<span class="sigil sigil-lu-house" aria-hidden="true"></span>
+</button>
+```
+
+Monochrome and duotone icons render as `currentColor` masks; full-color sources
+render as authored-color background images. The stylesheet embeds every SVG as
+a data URL, so it loads no external SVG, font, script, or runtime dependency.
 
 ## Install
 
@@ -72,14 +89,19 @@ sigil add lucide/a+b,mdi/c
 
 ## Manifest (`icons.json`)
 
-Grouped by set; `variant` and `prefix` are set-level design decisions:
+Grouped by set; `variant`, `prefix`, and `cssMode` are set-level design decisions:
 
 ```jsonc
 {
 	"ph": { "variant": "duotone", "icons": ["house", "airplane-taxiing"] },
 	"lucide": { "icons": ["house", { "name": "menu", "as": "Hamburger" }] },
+	"private-icons": { "cssMode": "image", "icons": ["logo"] },
 }
 ```
+
+Bundled adapters declare a safe CSS default (`mask` for monochrome sets,
+`image` for `svgl`). Long-tail or private sets require an explicit `cssMode`
+when Sigil cannot infer their color model without guessing.
 
 See [docs/design.md](./docs/design.md) for the full design.
 

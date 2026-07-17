@@ -1,10 +1,15 @@
 import { describe, expect, test } from 'bun:test'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import {
 	assertNoCollisions,
 	componentName,
 	effectiveName,
 	flatten,
+	loadManifest,
+	saveManifest,
 } from './manifest.ts'
 import { derivePrefix } from './source/iconify.ts'
 
@@ -80,5 +85,34 @@ describe('flatten + collisions', () => {
 				derivePrefix,
 			),
 		).toThrow('collision')
+	})
+})
+
+describe('cssMode', () => {
+	test('saveManifest preserves a set-level override', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'sigil-manifest-'))
+		const path = join(dir, 'icons.json')
+
+		try {
+			saveManifest(path, {
+				custom: { cssMode: 'image', icons: ['logo'] },
+			})
+			expect(loadManifest(path)?.custom?.cssMode).toBe('image')
+			expect(readFileSync(path, 'utf-8')).toContain('"cssMode": "image"')
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	test('loadManifest rejects unknown modes', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'sigil-manifest-'))
+		const path = join(dir, 'icons.json')
+
+		try {
+			writeFileSync(path, '{"custom":{"cssMode":"auto","icons":[]}}')
+			expect(() => loadManifest(path)).toThrow('expected "mask" or "image"')
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
 	})
 })

@@ -27,6 +27,7 @@ export const schema = {
 					sets: v.array(v.string()),
 					variant: v.optional(v.string()),
 					prefix: v.optional(v.string()),
+					cssMode: v.optional(v.picklist(['mask', 'image'])),
 				}),
 			),
 		),
@@ -104,9 +105,10 @@ export const schema = {
 	etch: c
 		.meta({
 			description:
-				'Generate icon files from the manifest. Without --jsx dumps one .svg per icon; with --jsx emits a component module (tsrx → .tsrx, others → .tsx). --atlas adds a sidecar preview module.',
+				'Generate icon files from the manifest. Without a format flag dumps one .svg per icon; --format css emits a self-contained stylesheet, while --jsx emits a component module.',
 			examples: [
 				'sigil etch --output public/svg',
+				'sigil etch --output public/icons.css --format css',
 				'sigil etch --output src/components/icons.tsx --jsx react',
 				'sigil etch --output src/components/icons.tsx --jsx react --atlas',
 				'sigil etch --output src/components --jsx solid',
@@ -118,6 +120,7 @@ export const schema = {
 			s(
 				v.object({
 					output: v.string(),
+					format: v.optional(v.picklist(['css'])),
 					jsx: v.optional(v.picklist(['react', 'solid', 'tsrx'])),
 					atlas: v.optional(v.boolean(), false),
 				}),

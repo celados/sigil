@@ -1,5 +1,7 @@
 import type { IconRef } from '../ref.ts'
 
+export type CssMode = 'mask' | 'image'
+
 export type SearchResult = {
 	hits: IconRef[]
 	total: number
@@ -25,6 +27,11 @@ export interface IconSource {
 	 * 且跨库重名(lucide/github vs simple-icons/github)天然不撞。
 	 */
 	prefix(set: string): string
+	/**
+	 * Safe CSS default; adapters with ambiguous color semantics require a
+	 * manifest override.
+	 */
+	cssMode?(set: string): CssMode
 	/**
 	 * 该库"无后缀"的 variant 名(ph → regular,heroicons → outline)。 manifest 的
 	 * set.variant 等于它时不拼后缀;无 variant 概念的库不声明。

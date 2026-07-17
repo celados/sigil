@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
+import type { CssMode } from './source/types.ts'
+
 import { parseRef, pascalCase } from './ref.ts'
 
 export type IconEntry = string | { name: string; as: string }
@@ -10,6 +12,11 @@ export type SetConfig = {
 	variant?: string
 	/** 覆盖 adapter 的组件名前缀;不填 = adapter 提供 */
 	prefix?: string
+	/**
+	 * Overrides the source default when CSS color semantics cannot be inferred
+	 * safely.
+	 */
+	cssMode?: CssMode
 	icons: IconEntry[]
 }
 
@@ -28,6 +35,11 @@ export function loadManifest(path: string): Manifest | null {
 	const raw = JSON.parse(readFileSync(path, 'utf-8')) as Manifest
 	// 早失败:manifest 可手编辑,坏 set/name 在 load 时就报出来
 	for (const [set, config] of Object.entries(raw)) {
+		if (config.cssMode && !['mask', 'image'].includes(config.cssMode)) {
+			throw new Error(
+				`invalid cssMode "${config.cssMode}" for set "${set}" — expected "mask" or "image"`,
+			)
+		}
 		for (const entry of config.icons ?? []) {
 			parseRef(`${set}/${typeof entry === 'string' ? entry : entry.name}`)
 		}
@@ -43,6 +55,7 @@ export function saveManifest(path: string, manifest: Manifest): void {
 		sorted[set] = {
 			...(config.variant ? { variant: config.variant } : {}),
 			...(config.prefix ? { prefix: config.prefix } : {}),
+			...(config.cssMode ? { cssMode: config.cssMode } : {}),
 			icons: [...config.icons].sort((a, b) =>
 				entryName(a).localeCompare(entryName(b)),
 			),

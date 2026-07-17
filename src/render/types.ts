@@ -1,9 +1,14 @@
-import type { ResolvedIcon } from '../source/types.ts'
+import type { CssMode, ResolvedIcon } from '../source/types.ts'
 
 export type NamedIcon = ResolvedIcon & {
 	componentName: string
 	/** 逐文件输出时的文件名(无扩展名),已保证唯一 */
 	fileName: string
+	/**
+	 * Resolved source default or manifest override; required only by the CSS
+	 * renderer.
+	 */
+	cssMode?: CssMode
 }
 
 /** Path 相对于输出目录;模块型 renderer 返回单文件,CLI 可用 -o 覆盖其位置 */

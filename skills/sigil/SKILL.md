@@ -1,6 +1,6 @@
 ---
 name: sigil
-description: Add icons to a project with the `sigil` CLI. Use when the user wants an icon (UI glyph or brand/logo) added as source code — SVG files or React/Solid components — from libraries like Lucide, Heroicons, Tabler, Phosphor, Simple Icons, or svgl. Also use when wiring up a project's icon set or regenerating icon components.
+description: Add and regenerate project icons with the `sigil` CLI as standalone SVG files, a file-portable CSS stylesheet, or React/Solid/Ripple components. Use for UI glyphs, brands/logos, class-based icons in standalone HTML, icons.json setup, or icon source selection across Lucide, Heroicons, Tabler, Phosphor, Simple Icons, svgl, and Iconify sets.
 ---
 
 # sigil — Icon Package Manager
@@ -65,13 +65,31 @@ sigil sources
    `sigil add lucide/house+menu+gear,svgl/github`. (`add` will auto-declare an
    undeclared library, but `use` is the explicit path.)
 
-5. **`sigil etch --output <path> [--jsx react|solid|tsrx]`** — generate. This is
+5. **`sigil etch --output <path> [--format css | --jsx react|solid|tsrx]`** — generate. This is
    the step that produces usable code:
    - no `--jsx` → dumps one `.svg` file per icon into the directory
+   - `--format css` → one self-contained stylesheet for class-based standalone HTML
    - `--jsx react` / `--jsx solid` → one `.tsx` component module
    - `--jsx tsrx` → one `.tsrx` module ([ripple-ts](https://tsrx.dev))
    - a path without a code extension gets the module file name appended
      (`icons.tsx` / `icons.tsrx`)
+
+Choose CSS for several icons in standalone HTML, especially `file://` documents:
+
+```html
+<link rel="stylesheet" href="./icons.css" />
+<span class="sigil sigil-lu-house" aria-hidden="true"></span>
+```
+
+Choose individual SVG files for `<img>`, independently accessible images,
+illustrations, animation, or SVG DOM control. Choose a framework renderer for
+built applications. Keep icon spans decorative; give a meaningful icon-only
+control an accessible name on its button or link, not on the CSS class.
+
+Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`.
+For a long-tail or private source, set `cssMode: "mask" | "image"` on that set
+in `icons.json` (or use `sigil use <set> --css-mode <mode>`). Never guess when
+the source's color semantics are ambiguous.
 
 6. **Verify** when the user asked for concrete setup: run `sigil list` to
    confirm the manifest, and make sure the generated file is imported where it's
@@ -118,3 +136,5 @@ the generated output; do not commit the vendor cache.
   `api.iconify.design` only for global discovery and for libraries without a
   bundled adapter. The bundled libraries (lucide, heroicons, tabler, ph,
   simple-icons, svgl) vendor over git and work offline after `use`.
+- **`CSS mode is unknown for "<set>"`** — set `cssMode` to `mask` or `image`
+  for that set; Sigil refuses to flatten ambiguous colors destructively.
