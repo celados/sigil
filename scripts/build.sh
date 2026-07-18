@@ -94,6 +94,9 @@ if [[ -n "$BUMP_KIND" ]]; then
     await Bun.write("package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
     console.log(`${current} -> ${packageJson.version}`);
   '
+
+  # oxfmt 对 JSON 用紧凑无缩进风格,bump 后必须对齐,否则 fmt:check 立刻失败
+  bunx oxfmt package.json >/dev/null
 fi
 
 VERSION="$(bun -e 'import packageJson from "./package.json" with { type: "json" }; console.log(packageJson.version);')"
