@@ -44,11 +44,11 @@ manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
 
 ### Provision 触发矩阵
 
-| 命令           | 行为                                                                    |
-| -------------- | ----------------------------------------------------------------------- |
-| `use`          | **主触发**:显式声明 + clone                                             |
-| `add` / `etch` | ensure(幂等恢复)——新 checkout 跑 etch 自动重建 vendor,同 `pnpm install` |
-| `search`       | **绝不 clone**(未 vendor → 走 API)                                      |
+| 命令           | 行为                                                    |
+| -------------- | ------------------------------------------------------- |
+| `use`          | **主触发**:显式声明 + clone                             |
+| `add` / `etch` | ensure(幂等恢复)——cache 缺失或超过一天时自动重新 vendor |
+| `search`       | **绝不 clone**(未 vendor → 走 API)                      |
 
 `remove <set>`(裸 set 名,无 `/`)删除整个库声明。
 
@@ -105,14 +105,20 @@ manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
 
 ## Vendoring:add 即 install
 
-像包管理器把依赖装进 node_modules 一样,`add` 把图标库 vendor 到本地:
+像包管理器安装依赖一样,`add` 把图标库 vendor 到本地——但落在 user 级
+cache 而非项目目录:
 
 - 专属 adapter(lucide、heroicons…)在 `add`/`etch` 时把上游仓库
-  **blobless sparse shallow clone** 到 `node_modules/.icons/<set>/`
-  (只拉图标目录的对象,秒级、幂等、随 node_modules 被 gitignore)。
+  **blobless sparse shallow clone** 到
+  `$XDG_CACHE_HOME/sigil/icons/<set>/`(默认 `~/.cache/sigil/icons/`,
+  只拉图标目录的对象,秒级完成)。cache 全机共享:工具可在任意目录工作,
+  不在项目里留下 `node_modules`,删掉 cache 目录也只是下次 vendor 重建。
+- **新鲜度按天控制**:clone 成功写 `<set>/.sigil-timestamp`,超过一天
+  `vendor()` 重新 clone(旧目录整个废弃);stamp 缺失一律视为过期。
+  过期判断只在 `use`/`add`/`etch` 的写路径执行——`search` 保持只读,
+  本地有数据就用本地,绝不触发网络。
 - 此后 search/resolve/etch 全走本地文件:快、离线、且能搜到 API 索引
   隐藏的图标(如 deprecated 项)和本地 tags 元数据。
-- 新 checkout 的项目跑 `etch` 会自动重新 vendor——语义同 `pnpm install`。
 - iconify API 的定位是**发现工具 + 长尾兜底**,不在主路径上:
   `search --all` 全局发现用它;未注册专属 adapter 的 set(mdi、carbon…)
   的 add/etch 兜底用它。两边对同一 set 的图标命名一致(adapter 镜像
@@ -157,7 +163,7 @@ export interface IconSource {
 	cssMode?(set: string): 'mask' | 'image'
 	// 该库"无后缀"的 variant 名(ph → regular);无 variant 概念的库不声明
 	readonly defaultVariant?: string
-	// vendor 数据到 node_modules/.icons/<set>(幂等);API 型 adapter 不实现
+	// vendor 数据到全局 cache(幂等,stamp 过期即刷新);API 型 adapter 不实现
 	vendor?(): Promise<void>
 	vendored?(): boolean
 	search(

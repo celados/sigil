@@ -64,10 +64,12 @@ bun add github:celados/sigil   # then `bunx sigil ...`
 
 - **use → search → add → etch**, modeled on a package manager: declare which
   libraries the project uses, then work inside them.
-- `use` blobless-sparse-clones each icon set into `node_modules/.icons/<set>/`,
-  then every later command runs against local files — fast, offline, and able to
-  find icons the hosted search index hides. `etch` re-vendors on a fresh
-  checkout, like `pnpm install`.
+- `use` blobless-sparse-clones each icon set into a user-level cache
+  (`$XDG_CACHE_HOME/sigil/icons/<set>/`, default `~/.cache/sigil/icons/`), then
+  every later command runs against local files — fast, offline, and able to
+  find icons the hosted search index hides. The cache is shared across all
+  projects, refreshes automatically after a day, and never touches your
+  project directory.
 - `etch` is a deterministic, atomic projection of `icons.json`: any missing icon
   fails the whole run without writing a file.
 - Component names are stable across variants (`PhHouse` whether weight is

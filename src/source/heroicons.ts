@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { IconSource, ResolvedIcon } from './types.ts'
 
 import { normalizeSvg } from './lucide.ts'
-import { sparseClone } from './vendor.ts'
+import { isFresh, sparseClone } from './vendor.ts'
 
 const REPO = 'https://github.com/tailwindlabs/heroicons.git'
 
@@ -69,7 +69,7 @@ export function createHeroiconsSource(dir: string): IconSource {
 		vendored: () => existsSync(outlineDir),
 
 		async vendor() {
-			if (existsSync(outlineDir)) return
+			if (isFresh(dir)) return
 			await sparseClone(REPO, dir, ['optimized'])
 		},
 

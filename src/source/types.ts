@@ -38,8 +38,8 @@ export interface IconSource {
 	 */
 	readonly defaultVariant?: string
 	/**
-	 * 把上游数据 vendor 到本地(node_modules/.icons/<set>),幂等:已存在即跳过。 `add`/`etch`
-	 * 前置调用,后续命令全走本地。API 型 adapter 不实现。
+	 * 把上游数据 vendor 到 user 级 cache(~/.cache/sigil/icons/<set>),幂等:stamp 在一天内即跳过,
+	 * 过期重新 clone。 `add`/`etch` 前置调用,后续命令全走本地。API 型 adapter 不实现。
 	 */
 	vendor?(): Promise<void>
 	/** 本地数据是否就绪;search 据此决定走本地还是 fallback */

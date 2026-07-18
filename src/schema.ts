@@ -1,6 +1,7 @@
 import { toStandardJsonSchema } from '@valibot/to-json-schema'
 import { c, cli } from 'argc'
-import { dirname, join, resolve } from 'node:path'
+import { homedir } from 'node:os'
+import { join, resolve } from 'node:path'
 import * as v from 'valibot'
 
 import packageJson from '../package.json' with { type: 'json' }
@@ -141,8 +142,13 @@ export const app = cli(schema, {
 		const manifestPath = resolve(globals.manifest)
 		return {
 			manifestPath,
-			// vendor 落在 node_modules 下:随项目走、天然被 gitignore
-			vendorRoot: join(dirname(manifestPath), 'node_modules', '.icons'),
+			// vendor 落在 user 级 cache(XDG):全机共享一份,不在项目目录留 node_modules;
+			// 新鲜度由 vendor.ts 的 stamp 按天控制,整个目录可随时删除(下次 vendor 重建)
+			vendorRoot: join(
+				process.env['XDG_CACHE_HOME'] ?? join(homedir(), '.cache'),
+				'sigil',
+				'icons',
+			),
 		}
 	},
 })

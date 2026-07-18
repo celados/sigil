@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { IconSource, ResolvedIcon } from './types.ts'
 
 import { normalizeSvg } from './lucide.ts'
-import { sparseClone } from './vendor.ts'
+import { isFresh, sparseClone } from './vendor.ts'
 
 const REPO = 'https://github.com/phosphor-icons/core.git'
 
@@ -60,7 +60,7 @@ export function createPhSource(dir: string): IconSource {
 		vendored: () => existsSync(assetsDir),
 
 		async vendor() {
-			if (existsSync(assetsDir)) return
+			if (isFresh(dir)) return
 			await sparseClone(REPO, dir, ['assets'])
 		},
 

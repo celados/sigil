@@ -328,7 +328,7 @@ app.run({
 			)
 
 			if (fresh.length > 0) {
-				// 像 pnpm add:先 vendor(shallow clone 进 node_modules/.icons)
+				// 像 pnpm add:先 vendor(sparse clone 进全局 cache)
 				// 再按 effective 名(含 set.variant)校验存在性,manifest 里不留死引用
 				const checkRefs = fresh.map((ref) =>
 					effectiveRef(

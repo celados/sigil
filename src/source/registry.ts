@@ -11,8 +11,8 @@ import { createSvglSource } from './svgl.ts'
 import { createTablerSource } from './tabler.ts'
 
 /**
- * Set → 专属 adapter 工厂。专属 adapter 在 add 时把上游 vendor 到
- * node_modules/.icons/<set>,后续命令全走本地;未注册的 set 走 iconify API fallback(覆盖 200+
+ * Set → 专属 adapter 工厂。专属 adapter 在 add 时把上游 vendor 到全局 cache (<XDG
+ * cache>/sigil/icons/<set>),后续命令全走本地;未注册的 set 走 iconify API fallback(覆盖 200+
  * 库,保住广泛搜索)。
  */
 const factories: Record<string, (dir: string) => IconSource> = {

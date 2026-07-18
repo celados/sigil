@@ -10,7 +10,7 @@ import { join } from 'node:path'
 
 import type { IconSource, ResolvedIcon } from './types.ts'
 
-import { sparseClone } from './vendor.ts'
+import { isFresh, sparseClone } from './vendor.ts'
 
 const REPO = 'https://github.com/lucide-icons/lucide.git'
 
@@ -48,7 +48,7 @@ export function createLucideSource(dir: string): IconSource {
 		vendored: () => existsSync(iconsDir),
 
 		async vendor() {
-			if (existsSync(iconsDir)) return
+			if (isFresh(dir)) return
 			await sparseClone(REPO, dir, ['icons'])
 		},
 

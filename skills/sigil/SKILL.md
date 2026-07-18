@@ -119,9 +119,10 @@ has no variants: its `-dark`/`-light` logos are distinct refs (`svgl/github-dark
 
 `etch` is deterministic and atomic: re-run it any time to regenerate; if any
 icon is missing upstream it fails the whole run without writing a file. The
-vendored data lives in `node_modules/.icons/` (gitignored) — on a fresh checkout
-`etch` re-vendors automatically, like `pnpm install`. Commit `icons.json` and
-the generated output; do not commit the vendor cache.
+vendored data lives in a user-level cache (`~/.cache/sigil/icons/`, or
+`$XDG_CACHE_HOME/sigil/icons/`) shared across all projects — `etch` re-vendors
+automatically when the cache is missing or older than a day. Commit
+`icons.json` and the generated output; nothing else is written to the project.
 
 ## Failure Modes
 

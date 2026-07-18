@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { IconSource, ResolvedIcon } from './types.ts'
 
 import { normalizeSvg } from './lucide.ts'
-import { sparseClone } from './vendor.ts'
+import { isFresh, sparseClone } from './vendor.ts'
 
 const REPO = 'https://github.com/simple-icons/simple-icons.git'
 
@@ -41,7 +41,7 @@ export function createSimpleIconsSource(dir: string): IconSource {
 		vendored: () => existsSync(iconsDir),
 
 		async vendor() {
-			if (existsSync(iconsDir)) return
+			if (isFresh(dir)) return
 			await sparseClone(REPO, dir, ['icons'])
 		},
 

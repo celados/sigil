@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { IconSource, ResolvedIcon } from './types.ts'
 
 import { normalizeSvg } from './lucide.ts'
-import { sparseClone } from './vendor.ts'
+import { isFresh, sparseClone } from './vendor.ts'
 
 const REPO = 'https://github.com/pheralb/svgl.git'
 
@@ -77,7 +77,7 @@ export function createSvglSource(dir: string): IconSource {
 		vendored: () => existsSync(libraryDir),
 
 		async vendor() {
-			if (existsSync(libraryDir)) return
+			if (isFresh(dir)) return
 			// 只需要 static/library 目录,blobless sparse clone 秒级完成
 			await sparseClone(REPO, dir, ['static/library'])
 			// vendor 后重置缓存
