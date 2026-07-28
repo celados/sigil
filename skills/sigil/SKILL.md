@@ -1,6 +1,6 @@
 ---
 name: sigil
-description: Add and regenerate project icons with the `sigil` CLI as standalone SVG files, a file-portable CSS stylesheet, or React/Solid/Ripple components. Use for UI glyphs, brands/logos, class-based icons in standalone HTML, icons.json setup, or icon source selection across Lucide, Heroicons, Tabler, Phosphor, Simple Icons, svgl, and Iconify sets.
+description: Add and regenerate project icons with the `sigil` CLI as standalone SVG files, a file-portable CSS stylesheet, or React/Solid/Octane/Ripple components. Use for UI glyphs, brands/logos, class-based icons in standalone HTML, icons.json setup, or icon source selection across Lucide, Heroicons, Tabler, Phosphor, Simple Icons, svgl, and Iconify sets.
 ---
 
 # sigil — Icon Package Manager
@@ -65,14 +65,19 @@ sigil sources
    `sigil add lucide/house+menu+gear,svgl/github`. (`add` will auto-declare an
    undeclared library, but `use` is the explicit path.)
 
-5. **`sigil etch --output <path> [--format css | --jsx react|solid|tsrx]`** — generate. This is
+5. **`sigil etch --output <path> [--format css | --jsx react|solid|octane|tsrx]`** — generate. This is
    the step that produces usable code:
    - no `--jsx` → dumps one `.svg` file per icon into the directory
    - `--format css` → one self-contained stylesheet for class-based standalone HTML
    - `--jsx react` / `--jsx solid` → one `.tsx` component module
-   - `--jsx tsrx` → one `.tsrx` module ([ripple-ts](https://tsrx.dev))
+   - `--jsx octane` → one `.tsrx` module for [Octane](https://github.com/octanejs/octane)
+   - `--jsx tsrx` → one `.tsrx` module for [Ripple](https://tsrx.dev)
    - a path without a code extension gets the module file name appended
      (`icons.tsx` / `icons.tsrx`)
+
+Octane and Ripple share the TSRX syntax family, but they are not interchangeable
+targets: their JSX types, SVG attribute conventions, and atlas state primitives
+differ. Select the actual framework instead of treating `.tsrx` as the runtime.
 
 Choose CSS for several icons in standalone HTML, especially `file://` documents:
 

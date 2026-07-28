@@ -12,14 +12,18 @@ sigil add lucide/house+menu,svgl/github      # record in icons.json
 sigil etch --output public/icons.css --format css  # standalone HTML / file://
 sigil etch --output src/icons.tsx --jsx react     # generate a component module
 sigil etch --output src/icons.tsx --jsx react --atlas  # also generate src/icons.atlas.tsx
+sigil etch --output src/icons --jsx octane --atlas     # Octane → icons.tsrx + atlas
 sigil etch --output src/icons --jsx tsrx --atlas        # also generate src/icons.atlas.tsrx
 sigil etch --output src/icons --jsx tsrx          # ripple-ts → src/icons.tsrx
 sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
 ```
 
-`--jsx` targets: `react`, `solid`, `tsrx` ([ripple-ts](https://tsrx.dev)). Without
-`--jsx`, etch dumps one `.svg` file per icon. Add `--atlas` with `--jsx react`,
-`--jsx solid`, or `--jsx tsrx` to generate a sidecar preview module
+`--jsx` targets: `react`, `solid`, `octane`
+([Octane](https://github.com/octanejs/octane)), and `tsrx`
+([Ripple](https://tsrx.dev)). Octane and Ripple both emit `.tsrx`, but use
+different framework types, SVG attribute conventions, and atlas state APIs, so
+they remain explicit targets. Without `--jsx`, etch dumps one `.svg` file per
+icon. Add `--atlas` with any `--jsx` target to generate a sidecar preview module
 (`icons.atlas.tsx` or `icons.atlas.tsrx`) that exports a searchable `IconAtlas`
 component.
 

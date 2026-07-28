@@ -18,6 +18,7 @@ sigil add lucide/house+menu            # 写入 icons.json
 sigil etch -o public/icons.css --format css  # 单文件 CSS data URL
 sigil etch -o src/icons.tsx --jsx react  # 生成组件模块
 sigil etch -o src/icons.tsx --jsx react --atlas  # 额外生成 src/icons.atlas.tsx
+sigil etch -o src/icons --jsx octane --atlas      # Octane .tsrx + atlas
 sigil etch -o src/icons --jsx tsrx --atlas        # 额外生成 src/icons.atlas.tsrx
 sigil etch -o public/svg               # 无 --jsx → dump 独立 .svg 文件
 ```
@@ -200,7 +201,7 @@ export type NamedIcon = ResolvedIcon & {
 export type RenderedFile = { path: string; content: string }
 
 export interface Renderer {
-	readonly id: string // 'css' | 'react' | 'solid' | 'tsrx' | 'svg'
+	readonly id: string // 'css' | 'react' | 'solid' | 'octane' | 'tsrx' | 'svg'
 	// 模块型 renderer 的默认文件名('icons.tsx');null 表示逐图标输出
 	readonly defaultFile: string | null
 	render(icons: NamedIcon[]): RenderedFile[]
@@ -273,14 +274,25 @@ body 是原生 SVG,React JSX 需要属性改名。规则是通用的,不维护�
 
 Solid JSX 接受原生 SVG 属性名,body 原样内联;`size` 用 `splitProps` 拆出。
 
+### Octane(`--jsx octane`)
+
+输出 `.tsrx` 模块,以
+[`octane/jsx-runtime`](https://github.com/octanejs/octane/blob/main/packages/octane/src/jsx-runtime.d.ts)
+的 `Octane.JSX.IntrinsicElements['svg']` 作为 props 合同。Octane 的 JSX
+surface 是 React-shaped,所以与 React renderer 共用原生 SVG 属性到
+camelCase JSX 属性的转换。组件使用 `@{}` 模板体;atlas 使用 Octane
+自己的 `useState`/`useMemo`/`useEffect`/`useRef`。
+
 ### TSRX(`--jsx tsrx`,ripple-ts → Ripple)
 
 输出 `.tsrx` 模块。依据 [tsrx.dev](https://tsrx.dev) 规格:Ripple 用原生 host
 属性(`class`/`stroke-width`),且"TSRX keeps authored attributes as written"
 ——所以 body 与 Solid 一样原样内联,不改名。组件是普通 TS 函数返回 JSX,
-参数用 `&{ size, ...props }` 惰性解构保 Ripple 的细粒度响应,`size ?? '1em'`
-写在 JSX 属性表达式里(避开未在文档展示的"惰性解构默认值",且属性表达式
-在 Ripple 下仍被追踪)。tsrx DSL 仍在演进,变更只需改这一个 renderer。
+参数用 `&{ size = '1em', ...props }` 惰性解构保 Ripple 的细粒度响应。
+
+Octane 与 Ripple 共享 TSRX 语法族,基础组件形状接近,但不是同一个生成目标:
+JSX 类型入口、SVG 属性合同和 atlas 状态 API 都不同。共享转换 helper,不合并
+renderer 身份,避免把“编译器能解析”误当成完整的类型与运行时兼容。
 
 ### svg(无 `--jsx`)
 
@@ -300,7 +312,7 @@ sigil search <query> [--set lucide] [--all] [--limit 64] [--json]
 sigil add <refs...> [--as <Name>]     # --as 仅允许单个 ref;DSL: set/a+b,set2/c
 sigil remove <refs...>                # 裸 set 名删整个库
 sigil list [--json]
-sigil etch --output <path> [--jsx react|solid|tsrx] [--atlas]
+sigil etch --output <path> [--jsx react|solid|octane|tsrx] [--atlas]
 ```
 
 - **不设 alias**(rm/ls/-o 这类短形式):使用者是 agent,`output` 和 `o`

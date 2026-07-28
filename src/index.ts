@@ -481,7 +481,9 @@ app.run({
 				fail('manifest is empty — run `sigil add <set>/<name>` first')
 			}
 			if (input.atlas && !input.jsx) {
-				fail('--atlas requires --jsx react, --jsx solid, or --jsx tsrx')
+				fail(
+					'--atlas requires --jsx react, --jsx solid, --jsx octane, or --jsx tsrx',
+				)
 			}
 			if (input.format && input.jsx) {
 				fail('--format and --jsx cannot be combined')
@@ -502,7 +504,13 @@ app.run({
 					files = renderer.render(named, {
 						atlas: input.atlas,
 						atlasFileName: atlasFileNameFor(out),
-						atlasImportPath: importPathFor(out),
+						// Octane's tsrx-tsc resolves sibling .tsrx modules only
+						// with the authored extension; other targets keep their
+						// established extensionless imports.
+						atlasImportPath:
+							renderer.id === 'octane'
+								? `./${basename(out)}`
+								: importPathFor(out),
 					})
 				} catch (e) {
 					fail((e as Error).message)

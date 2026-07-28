@@ -113,6 +113,8 @@ export const schema = {
 				'sigil etch --output src/components/icons.tsx --jsx react',
 				'sigil etch --output src/components/icons.tsx --jsx react --atlas',
 				'sigil etch --output src/components --jsx solid',
+				'sigil etch --output src/components --jsx octane',
+				'sigil etch --output src/components --jsx octane --atlas',
 				'sigil etch --output src/components --jsx tsrx',
 				'sigil etch --output src/components --jsx tsrx --atlas',
 			],
@@ -122,7 +124,7 @@ export const schema = {
 				v.object({
 					output: v.string(),
 					format: v.optional(v.picklist(['css'])),
-					jsx: v.optional(v.picklist(['react', 'solid', 'tsrx'])),
+					jsx: v.optional(v.picklist(['react', 'solid', 'octane', 'tsrx'])),
 					atlas: v.optional(v.boolean(), false),
 				}),
 			),
