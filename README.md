@@ -4,30 +4,30 @@ Agent-friendly icon package manager. Manage icons like dependencies: declare
 them in a manifest, and codegen is a pure projection of it.
 
 ```sh
-sigil sources                                  # list supported libraries/sources
-sigil use lucide svgl                        # declare libraries + vendor locally
-sigil search house                           # scoped to declared libraries, offline
-sigil search github --all                    # global discovery (200+ sets via Iconify)
-sigil add lucide/house+menu,svgl/github      # record in icons.json
-sigil etch --output public/icons.css --format css  # standalone HTML / file://
-sigil etch --output src/icons.tsx --jsx react     # generate a component module
-sigil etch --output src/icons.tsx --jsx react --atlas  # also generate src/icons.atlas.tsx
-sigil etch --output src/icons --jsx octane --atlas     # Octane → icons.tsrx + atlas
-sigil etch --output src/icons --jsx tsrx --atlas        # also generate src/icons.atlas.tsrx
-sigil etch --output src/icons --jsx tsrx          # ripple-ts → src/icons.tsrx
-sigil etch --output public/svg                    # no --jsx → dump one .svg per icon
+sigil sources '{}'                        # list supported libraries/sources
+sigil use "{ sets: ['lucide', 'svgl'] }"  # declare libraries + vendor locally
+sigil search "{ query: 'house' }"          # scoped to declared libraries, offline
+sigil search "{ query: 'github', all: true }"  # global discovery via Iconify
+sigil add "{ refs: ['lucide/house', 'lucide/menu', 'svgl/github'] }"
+sigil etch "{ output: 'public/icons.css', format: 'css' }"  # standalone HTML / file://
+sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"      # component module
+sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
+sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"  # .tsrx + atlas
+sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
+sigil etch "{ output: 'src/icons', jsx: 'tsrx' }"  # Ripple TSRX
+sigil etch "{ output: 'public/svg' }"               # one .svg per icon
 ```
 
-`--jsx` targets: `react`, `solid`, `octane`
+`jsx` targets: `react`, `solid`, `octane`
 ([Octane](https://github.com/octanejs/octane)), and `tsrx`
 ([Ripple](https://tsrx.dev)). Octane and Ripple both emit `.tsrx`, but use
 different framework types, SVG attribute conventions, and atlas state APIs, so
-they remain explicit targets. Without `--jsx`, etch dumps one `.svg` file per
-icon. Add `--atlas` with any `--jsx` target to generate a sidecar preview module
+they remain explicit targets. Without `jsx`, etch dumps one `.svg` file per
+icon. Add `atlas: true` with any `jsx` target to generate a sidecar preview module
 (`icons.atlas.tsx` or `icons.atlas.tsrx`) that exports a searchable `IconAtlas`
 component.
 
-`--format css` emits one self-contained stylesheet for standalone HTML,
+`format: 'css'` emits one self-contained stylesheet for standalone HTML,
 including documents opened directly through `file://`:
 
 ```html
@@ -83,15 +83,19 @@ bun add github:celados/sigil   # then `bunx sigil ...`
 Run `sigil sources` to see the supported sources. Bundled adapters are
 `heroicons`, `lucide`, `ph`, `simple-icons`, `svgl`, and `tabler`; any other set
 falls back to the Iconify API with identical naming, so refs stay portable.
-`sigil use` without arguments prints the same source list for quick discovery.
+`sigil use '{}'` prints the same source list for quick discovery.
 
-## Ref DSL
+## Icon refs
 
-`+` joins icons, `,` (or a space) separates sets:
+Refs are explicit `set/name` strings. List them as array elements; there is no
+separator DSL:
 
 ```sh
-sigil add lucide/a+b,mdi/c
+sigil add "{ refs: ['lucide/a', 'lucide/b', 'mdi/c'] }"
 ```
+
+Commands return structured YAML. Pass a non-default manifest with
+`--context "{ manifest: 'path/to/icons.json' }"`.
 
 ## Manifest (`icons.json`)
 

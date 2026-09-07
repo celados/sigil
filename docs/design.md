@@ -10,17 +10,17 @@ Agent 友好的图标包管理器。像 `pnpm` 管依赖一样管图标:声明�
 codegen 是 manifest 的纯投影。
 
 ```
-sigil sources                         # 列出支持的 source
-sigil use lucide svgl                  # 声明项目用哪些库 + vendor 到本地
-sigil search house                     # 默认只搜已声明的库:本地、离线
-sigil search github --all              # 全局发现(iconify 索引,选库阶段用)
-sigil add lucide/house+menu            # 写入 icons.json
-sigil etch -o public/icons.css --format css  # 单文件 CSS data URL
-sigil etch -o src/icons.tsx --jsx react  # 生成组件模块
-sigil etch -o src/icons.tsx --jsx react --atlas  # 额外生成 src/icons.atlas.tsx
-sigil etch -o src/icons --jsx octane --atlas      # Octane .tsrx + atlas
-sigil etch -o src/icons --jsx tsrx --atlas        # 额外生成 src/icons.atlas.tsrx
-sigil etch -o public/svg               # 无 --jsx → dump 独立 .svg 文件
+sigil sources '{}'                         # 列出支持的 source
+sigil use "{ sets: ['lucide', 'svgl'] }"    # 声明库 + vendor 到本地
+sigil search "{ query: 'house' }"           # 默认只搜已声明库:本地、离线
+sigil search "{ query: 'github', all: true }" # 全局发现(iconify 索引)
+sigil add "{ refs: ['lucide/house', 'lucide/menu'] }"
+sigil etch "{ output: 'public/icons.css', format: 'css' }"
+sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"
+sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
+sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"
+sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
+sigil etch "{ output: 'public/svg' }"       # 无 jsx → dump 独立 .svg 文件
 ```
 
 ## 心智模型:库优先
@@ -32,14 +32,14 @@ sigil etch -o public/svg               # 无 --jsx → dump 独立 .svg 文件
 | --------- | ----------------- | -------------------------------------------------------------- |
 | `sources` | registry/catalog  | 列出内置可 vendor 的 source 与 Iconify fallback                |
 | `use`     | 写 `dependencies` | 声明库 + **provision**(vendor 到本地)                          |
-| `search`  | `npm search`      | 默认作用域 = 已 use 的库(本地、离线);`--all` 全局发现          |
+| `search`  | `npm search`      | 默认作用域 = 已 use 的库(本地、离线);`all: true` 全局发现      |
 | `add`     | `pnpm add`        | 校验存在性后写入 `icons.json`;未 use 的库自动声明(stderr 提示) |
 | `etch`    | `install/codegen` | 读 manifest → 解析 → 生成文件,**纯投影**                       |
 
 锁库之后日常 search/add/etch **完全离线**;`api.iconify.design` 只在
-`--all` 发现和长尾库兜底时出场。
+`all: true` 发现和长尾库兜底时出场。
 
-`sources` 是非交互的能力发现命令;裸 `use` 也打印同一份列表,作为用户不确定
+`sources` 是非交互的能力发现命令;空 `use` 输入也打印同一份列表,作为不确定
 要声明哪个库时的低摩擦入口。不要把支持列表拼进 `list`: `list` 表达当前
 manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
 
@@ -81,10 +81,9 @@ manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
 }
 ```
 
-- ref 语法统一为 `set/name`(CLI 与 manifest 一致)。`add` 的极简 DSL
-  一句话学会:**`+` 分图标,`,`(或空格)分库**——
-  `add lucide/a+b,mdi/c`。每个 `,` 段自包含(必须带 `set/`),
-  无"继承上文 set"的隐式规则。
+- ref 语法统一为 `set/name`(CLI 与 manifest 一致)。`add`/`remove` 的输入是
+  显式字符串数组;`+`、`,`、`:` 等分隔符 DSL 全部不存在,调用方也不需要
+  依赖 shell 对多参数的拆分行为。
 - **variant 是 set 级的一个字符串,不是图标身份的一部分**。洞察:一个应用
   只会用一种 variant,不存在运行时切 weight 的需求。manifest 存 base 名,
   resolve 时拼后缀;规则全库统一(镜像 Iconify 约定):variant 等于 adapter
@@ -121,7 +120,7 @@ cache 而非项目目录:
 - 此后 search/resolve/etch 全走本地文件:快、离线、且能搜到 API 索引
   隐藏的图标(如 deprecated 项)和本地 tags 元数据。
 - iconify API 的定位是**发现工具 + 长尾兜底**,不在主路径上:
-  `search --all` 全局发现用它;未注册专属 adapter 的 set(mdi、carbon…)
+  `all: true` 全局发现用它;未注册专属 adapter 的 set(mdi、carbon…)
   的 add/etch 兜底用它。两边对同一 set 的图标命名一致(adapter 镜像
   Iconify 命名),ref 完全可移植。
 - 多个 set 的 vendor 与 resolve 全部并发(按 set 分组 `Promise.all`)。
@@ -208,12 +207,12 @@ export interface Renderer {
 }
 ```
 
-`-o` 的语义由此变得简单:format 来自 `--format`/`--jsx`,path 只管位置——
+`output` 的语义由此变得简单:format 来自 `format`/`jsx`,path 只管位置——
 
-- `--jsx react` + `-o src/icons.tsx` → 单文件模块
-- `--jsx react` + `-o src/icons`(目录/无扩展名)→ 自动补 `/icons.tsx`
-- 无 `--jsx` + `-o public/svg` → svg renderer,逐图标 `github.svg`…
-- `--format css` + `-o public/icons.css` → 单个自包含 stylesheet
+- `jsx: 'react'` + `output: 'src/icons.tsx'` → 单文件模块
+- `jsx: 'react'` + `output: 'src/icons'`(目录/无扩展名)→ 自动补 `/icons.tsx`
+- 无 `jsx` + `output: 'public/svg'` → svg renderer,逐图标 `github.svg`…
+- `format: 'css'` + `output: 'public/icons.css'` → 单个自包含 stylesheet
 
 ## Codegen 规则
 
@@ -274,7 +273,7 @@ body 是原生 SVG,React JSX 需要属性改名。规则是通用的,不维护�
 
 Solid JSX 接受原生 SVG 属性名,body 原样内联;`size` 用 `splitProps` 拆出。
 
-### Octane(`--jsx octane`)
+### Octane(`jsx: 'octane'`)
 
 输出 `.tsrx` 模块,以
 [`octane/jsx-runtime`](https://github.com/octanejs/octane/blob/main/packages/octane/src/jsx-runtime.d.ts)
@@ -283,7 +282,7 @@ surface 是 React-shaped,所以与 React renderer 共用原生 SVG 属性到
 camelCase JSX 属性的转换。组件使用 `@{}` 模板体;atlas 使用 Octane
 自己的 `useState`/`useMemo`/`useEffect`/`useRef`。
 
-### TSRX(`--jsx tsrx`,ripple-ts → Ripple)
+### TSRX(`jsx: 'tsrx'`,ripple-ts → Ripple)
 
 输出 `.tsrx` 模块。依据 [tsrx.dev](https://tsrx.dev) 规格:Ripple 用原生 host
 属性(`class`/`stroke-width`),且"TSRX keeps authored attributes as written"
@@ -294,31 +293,33 @@ Octane 与 Ripple 共享 TSRX 语法族,基础组件形状接近,但不是同一
 JSX 类型入口、SVG 属性合同和 atlas 状态 API 都不同。共享转换 helper,不合并
 renderer 身份,避免把“编译器能解析”误当成完整的类型与运行时兼容。
 
-### svg(无 `--jsx`)
+### svg(无 `jsx`)
 
 逐图标输出完整 `.svg` 文件(`iconToHTML` 包装),文件头带 license 注释。
 
 ## CLI(argc)
 
-用 [argc](https://github.com/ethan-huo/argc) schema-first 定义,白送
-`--schema`(agent 自描述)、`--input` JSON、shell completions。
+用 [argc](https://github.com/ethan-huo/argc) v7 schema-first 定义,白送
+`@schema`(agent 自描述)、`@run` 脚本入口、`@skill` 内嵌使用指南和 shell
+completions。
 
 ```
-globals: --manifest <path>   # 默认 ./icons.json
+context: { manifest?: string }   # 默认 ./icons.json;--context 或 ARGC_CTX 传入
 
-sigil sources [--json]
-sigil use <sets...> [--variant X] [--prefix Y]   # flags 仅允许单个 set
-sigil search <query> [--set lucide] [--all] [--limit 64] [--json]
-sigil add <refs...> [--as <Name>]     # --as 仅允许单个 ref;DSL: set/a+b,set2/c
-sigil remove <refs...>                # 裸 set 名删整个库
-sigil list [--json]
-sigil etch --output <path> [--jsx react|solid|octane|tsrx] [--atlas]
+sigil sources '{}'
+sigil use "{ sets: [...], variant?, prefix?, cssMode? }"
+sigil search "{ query, set?, all?, limit? }"
+sigil add "{ refs: [...], as? }"
+sigil remove "{ refs: [...] }"       # 裸 set 名删整个库
+sigil list '{}'
+sigil etch "{ output, format? | jsx?, atlas? }"
 ```
 
-- **不设 alias**(rm/ls/-o 这类短形式):使用者是 agent,`output` 和 `o`
-  都是一个 token,alias 是纯噪音。
-- stdout 纪律:结果走 stdout(`--json` 时是纯 JSON),诊断走 stderr。
-- search 路由:`--set` 命中已 vendor 的专属 adapter → 本地搜索;
+- **不设 alias 或 ref DSL**(rm/ls/-o/`a+b,c` 这类短形式):使用者是 agent,
+  结构化字段比 shell 方言更稳定。
+- stdout 纪律:handler 返回结构化结果,argc 序列化为 YAML;诊断走 stderr。
+  脚本需要严格 JSON 时用 `@run --json`,命令本身不暴露 `json` flag。
+- search 路由:`set` 命中已 vendor 的专属 adapter → 本地搜索;
   否则 iconify API 全局发现。
 
 ## 非目标
@@ -326,7 +327,7 @@ sigil etch --output <path> [--jsx react|solid|octane|tsrx] [--atlas]
 - lockfile / 版本钉死(上游近似 append-only,etch 失败兜底足够)
 - 运行时图标组件(那是 `@iconify/react` 的事;sigil 产出的是源码)
 - SVG 优化(Iconify 数据已优化过;SVGO 属于过度机械)
-- MCP server(CLI + `--schema` 对 agent 已足够;需要时再包一层)
+- MCP server(CLI + `@schema` 对 agent 已足够;需要时再包一层)
 
 ## 已知尾巴
 

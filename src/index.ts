@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { domainError } from '@celados/argc'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 
@@ -16,16 +17,30 @@ import {
 	loadManifest,
 	saveManifest,
 } from './manifest.ts'
-import { expandRefArgs, formatRef, kebabCase, parseRef } from './ref.ts'
+import { formatRef, kebabCase, parseRef } from './ref.ts'
 import { renderers } from './render/registry.ts'
 import { resolveRefs } from './resolve.ts'
-import { app } from './schema.ts'
+import { app, runtimeContext } from './schema.ts'
 import { iconifySource } from './source/iconify.ts'
 import { bundledSourceSets, sourceFor } from './source/registry.ts'
 
-function fail(message: string): never {
-	console.error(`sigil: ${message}`)
-	process.exit(1)
+type DomainCode =
+	| 'alias_requires_single_ref'
+	| 'atlas_requires_component_renderer'
+	| 'component_collision'
+	| 'conflicting_renderers'
+	| 'icon_not_found'
+	| 'invalid_ref'
+	| 'invalid_set'
+	| 'manifest_empty'
+	| 'manifest_missing'
+	| 'missing_upstream'
+	| 'render_failed'
+	| 'set_options_require_single_set'
+	| 'upstream_error'
+
+function fail(code: DomainCode, message: string): never {
+	throw domainError(code, message)
 }
 
 function atlasFileNameFor(out: string): string {
@@ -44,7 +59,7 @@ async function attempt<T>(promise: Promise<T>): Promise<T> {
 	try {
 		return await promise
 	} catch (e) {
-		fail((e as Error).message)
+		fail('upstream_error', (e as Error).message)
 	}
 }
 
@@ -89,14 +104,15 @@ async function resolveManifest(
 	try {
 		assertNoCollisions(entries, prefixFor(manifest, vendorRoot))
 	} catch (e) {
-		fail((e as Error).message)
+		fail('component_collision', (e as Error).message)
 	}
 	const refs = entries.map((entry) => effectiveRef(manifest, entry, vendorRoot))
 	const { icons, missing } = await attempt(resolveRefs(refs, vendorRoot))
 	if (missing.length > 0) {
 		fail(
+			'missing_upstream',
 			`missing upstream: ${missing.map(formatRef).join(', ')}\n` +
-				`  fix the name/variant or run \`sigil remove <ref>\``,
+				`  fix the name/variant or run \`sigil remove "{ refs: ['<ref>'] }"\``,
 		)
 	}
 	const byRef = new Map(icons.map((icon) => [formatRef(icon.ref), icon]))
@@ -137,89 +153,74 @@ function sourceRows(vendorRoot: string) {
 	}
 }
 
-function printSources(vendorRoot: string, json = false) {
-	const sources = sourceRows(vendorRoot)
-	if (json) {
-		console.log(JSON.stringify(sources))
-		return
-	}
-
-	console.log('Bundled sources (vendored locally after `sigil use <set>`):')
-	const width = Math.max(...sources.bundled.map((source) => source.set.length))
-	for (const source of sources.bundled) {
-		const annotations = [
-			source.prefix,
-			...(source.cssMode ? [`cssMode=${source.cssMode}`] : []),
-			...(source.defaultVariant
-				? [`defaultVariant=${source.defaultVariant}`]
-				: []),
-		].join(' · ')
-		console.log(`  ${source.set.padEnd(width)}  ${annotations}`)
-	}
-	console.log('')
-	console.log('Fallback:')
-	console.log(
-		'  <iconify-set>  any Iconify collection via API; prefix is derived',
-	)
-}
-
-app.run({
+await app.run({
 	handlers: {
 		use: async ({ input, context }) => {
+			const runtime = runtimeContext(context)
 			if (input.sets.length === 0) {
 				if (input.variant || input.prefix || input.cssMode) {
-					fail('--variant/--prefix/--css-mode require a set')
+					fail(
+						'set_options_require_single_set',
+						'variant, prefix, and cssMode require exactly one set',
+					)
 				}
-				printSources(context.vendorRoot)
-				return
+				return sourceRows(runtime.vendorRoot)
 			}
 			if (
 				(input.variant || input.prefix || input.cssMode) &&
 				input.sets.length !== 1
 			) {
-				fail('--variant/--prefix/--css-mode require exactly one set')
+				fail(
+					'set_options_require_single_set',
+					'variant, prefix, and cssMode require exactly one set',
+				)
 			}
-			const manifest = loadManifest(context.manifestPath) ?? defaultManifest()
+			const manifest = loadManifest(runtime.manifestPath) ?? defaultManifest()
 			for (const set of input.sets) {
 				if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(set)) {
-					fail(`invalid set name "${set}"`)
+					fail('invalid_set', `invalid set name "${set}"`)
 				}
 				const config = (manifest[set] ??= { icons: [] })
 				if (input.variant) config.variant = input.variant
 				if (input.prefix) config.prefix = input.prefix
 				if (input.cssMode) config.cssMode = input.cssMode
 			}
-			saveManifest(context.manifestPath, manifest)
+			saveManifest(runtime.manifestPath, manifest)
 			// use = 显式 provision:并发 clone 全部声明的库
 			await attempt(
 				Promise.all(
 					input.sets.map((set) =>
-						sourceFor(set, context.vendorRoot).vendor?.(),
+						sourceFor(set, runtime.vendorRoot).vendor?.(),
 					),
 				),
 			)
-			for (const set of input.sets) {
-				const source = sourceFor(set, context.vendorRoot)
-				const mode = source.vendored?.() ? 'vendored' : 'via iconify API'
-				console.log(
-					`+ using ${set} (${manifest[set]?.prefix ?? source.prefix(set)}) · ${mode}`,
-				)
+			return {
+				used: input.sets.map((set) => {
+					const source = sourceFor(set, runtime.vendorRoot)
+					return {
+						set,
+						prefix: manifest[set]?.prefix ?? source.prefix(set),
+						mode: source.vendored?.() ? 'vendored' : 'iconify-api',
+					}
+				}),
 			}
 		},
 
-		sources: async ({ input, context }) => {
-			printSources(context.vendorRoot, input.json)
+		sources: async ({ context }) => {
+			return sourceRows(runtimeContext(context).vendorRoot)
 		},
 
 		search: async ({ input, context }) => {
-			const manifest = loadManifest(context.manifestPath)
+			const runtime = runtimeContext(context)
+			const manifest = loadManifest(runtime.manifestPath)
 			const used = manifest ? Object.keys(manifest) : []
 
 			let results
-			let footer: string | null = null
+			let scope: string[] | 'all' | null
 			if (input.set) {
 				// 显式单库:已 vendor 走本地(含 API 隐藏的 deprecated 图标),否则 API
-				const local = sourceFor(input.set, context.vendorRoot)
+				scope = [input.set]
+				const local = sourceFor(input.set, runtime.vendorRoot)
 				const source = local.vendored?.() ? local : iconifySource
 				results = [
 					await attempt(
@@ -231,26 +232,24 @@ app.run({
 				]
 			} else if (input.all || used.length === 0) {
 				// 显式全局,或冷项目(尚未 use 任何库)→ iconify 全索引发现
+				scope = 'all'
 				results = [
 					await attempt(
 						iconifySource.search(input.query, { limit: input.limit }),
 					),
 				]
-				if (used.length === 0) {
-					footer =
-						'# no libraries declared · searched all of iconify (`sigil use <set>` to pin)'
-				}
 			} else {
 				// 默认作用域 = 已 use 的库:vendored 的并发本地搜,
 				// 长尾(无专属 adapter)打包一次 iconify prefixes 查询
+				scope = used
 				const localSets = used.filter((s) =>
-					sourceFor(s, context.vendorRoot).vendored?.(),
+					sourceFor(s, runtime.vendorRoot).vendored?.(),
 				)
 				const apiSets = used.filter((s) => !localSets.includes(s))
 				results = await attempt(
 					Promise.all([
 						...localSets.map((s) =>
-							sourceFor(s, context.vendorRoot).search(input.query, {
+							sourceFor(s, runtime.vendorRoot).search(input.query, {
 								limit: input.limit,
 							}),
 						),
@@ -264,7 +263,6 @@ app.run({
 							: []),
 					]),
 				)
-				footer = `# scope: ${used.join(', ')} · --all for global discovery`
 			}
 
 			const hits = results.flatMap((r) => r.hits)
@@ -274,49 +272,28 @@ app.run({
 				...results.map((r) => r.sets),
 			) as (typeof results)[number]['sets']
 
-			if (input.json) {
-				console.log(JSON.stringify({ icons: hits.map(formatRef), total, sets }))
-				return
+			return {
+				icons: hits.map(formatRef),
+				shown: hits.length,
+				total,
+				scope,
+				sets,
 			}
-			if (hits.length === 0) {
-				console.error(
-					`no icons found for "${input.query}"${footer?.includes('scope') ? ' in declared libraries — try --all' : ''}`,
-				)
-				process.exit(1)
-			}
-			const bySet = new Map<string, string[]>()
-			for (const hit of hits) {
-				const names = bySet.get(hit.set) ?? []
-				names.push(hit.name)
-				bySet.set(hit.set, names)
-			}
-			const width = Math.max(...[...bySet.keys()].map((s) => s.length))
-			for (const [set, names] of bySet) {
-				const license = sets[set]?.license
-				console.log(
-					`${set.padEnd(width)}  ${names.join(', ')}${license ? `  · ${license}` : ''}`,
-				)
-			}
-			if (total > hits.length) {
-				console.log(
-					`# ${hits.length}/${total} shown · narrow with --set <set> or raise --limit`,
-				)
-			}
-			if (footer) console.log(footer)
 		},
 
 		add: async ({ input, context }) => {
+			const runtime = runtimeContext(context)
 			let refs
 			try {
-				refs = expandRefArgs(input.refs).map(parseRef)
+				refs = input.refs.map(parseRef)
 			} catch (e) {
-				fail((e as Error).message)
+				fail('invalid_ref', (e as Error).message)
 			}
 			if (input.as && refs.length !== 1) {
-				fail('--as requires exactly one ref')
+				fail('alias_requires_single_ref', 'as requires exactly one ref')
 			}
 
-			const manifest = loadManifest(context.manifestPath) ?? defaultManifest()
+			const manifest = loadManifest(runtime.manifestPath) ?? defaultManifest()
 			const fresh = refs.filter(
 				(ref) =>
 					!manifest[ref.set]?.icons.some((x) => entryName(x) === ref.name),
@@ -334,16 +311,17 @@ app.run({
 					effectiveRef(
 						manifest,
 						{ set: ref.set, name: ref.name },
-						context.vendorRoot,
+						runtime.vendorRoot,
 					),
 				)
 				const { missing } = await attempt(
-					resolveRefs(checkRefs, context.vendorRoot),
+					resolveRefs(checkRefs, runtime.vendorRoot),
 				)
 				if (missing.length > 0) {
 					fail(
+						'icon_not_found',
 						`not found: ${missing.map(formatRef).join(', ')}\n` +
-							`  try \`sigil search <query>\` to find the right name`,
+							`  try \`sigil search "{ query: '<query>' }"\` to find the right name`,
 					)
 				}
 				for (const ref of fresh) {
@@ -357,48 +335,49 @@ app.run({
 			try {
 				assertNoCollisions(
 					flatten(manifest),
-					prefixFor(manifest, context.vendorRoot),
+					prefixFor(manifest, runtime.vendorRoot),
 				)
 			} catch (e) {
-				fail((e as Error).message)
+				fail('component_collision', (e as Error).message)
 			}
-			saveManifest(context.manifestPath, manifest)
+			if (fresh.length > 0) saveManifest(runtime.manifestPath, manifest)
 
-			for (const ref of fresh) {
-				const entry: FlatEntry = input.as
-					? { set: ref.set, name: ref.name, as: input.as }
-					: { set: ref.set, name: ref.name }
-				console.log(
-					`+ ${formatRef(ref)} → ${nameFor(manifest, entry, context.vendorRoot)}`,
-				)
+			return {
+				added: fresh.map((ref) => {
+					const entry: FlatEntry = input.as
+						? { set: ref.set, name: ref.name, as: input.as }
+						: { set: ref.set, name: ref.name }
+					return {
+						ref: formatRef(ref),
+						component: nameFor(manifest, entry, runtime.vendorRoot),
+					}
+				}),
+				skipped,
+				autoUsed,
 			}
-			for (const set of autoUsed) {
-				console.error(
-					`# using ${set} (auto-declared — \`sigil use\` is the explicit way)`,
-				)
-			}
-			if (skipped > 0) console.error(`# ${skipped} already in manifest`)
 		},
 
 		remove: async ({ input, context }) => {
+			const runtime = runtimeContext(context)
 			const manifest =
-				loadManifest(context.manifestPath) ?? fail('no manifest found')
+				loadManifest(runtime.manifestPath) ??
+				fail('manifest_missing', 'no manifest found')
 			// 裸 set 名(无 /)= 删除整个库声明;带 / 的是单个图标
-			const tokens = input.refs.flatMap((arg) => arg.split(',')).filter(Boolean)
-			const bareSets = tokens.filter((t) => !/[/:]/.test(t))
+			const bareSets = input.refs.filter((t) => !/\//.test(t))
 			let refs
 			try {
-				refs = expandRefArgs(tokens.filter((t) => /[/:]/.test(t))).map(parseRef)
+				refs = input.refs.filter((t) => /\//.test(t)).map(parseRef)
 			} catch (e) {
-				fail((e as Error).message)
+				fail('invalid_ref', (e as Error).message)
 			}
 			let removed = 0
 			const notFound: string[] = []
+			const removedLibraries: string[] = []
 			for (const set of bareSets) {
 				if (manifest[set]) {
 					removed += manifest[set].icons.length
 					delete manifest[set]
-					console.log(`- removed library ${set}`)
+					removedLibraries.push(set)
 				} else {
 					notFound.push(set)
 				}
@@ -413,82 +392,57 @@ app.run({
 				if (before === after) notFound.push(formatRef(ref))
 				removed += before - after
 			}
-			saveManifest(context.manifestPath, manifest)
-			console.log(`- removed ${removed}`)
-			if (notFound.length > 0) {
-				console.error(`# not in manifest: ${notFound.join(', ')}`)
-			}
+			saveManifest(runtime.manifestPath, manifest)
+			return { removed, libraries: removedLibraries, notFound }
 		},
 
 		list: async ({ input, context }) => {
-			const manifest = loadManifest(context.manifestPath)
+			const runtime = runtimeContext(context)
+			const manifest = loadManifest(runtime.manifestPath)
 			const used = manifest ? Object.keys(manifest) : []
 			if (!manifest || used.length === 0) {
-				if (input.json) {
-					console.log(JSON.stringify({ libraries: [], icons: [] }))
-					return
-				}
-				console.error('manifest is empty — run `sigil use <set>`')
-				return
+				return { libraries: [], icons: [] }
 			}
 			const libraries = used.map((set) => {
-				const cssMode = cssModeFor(manifest, set, context.vendorRoot)
+				const cssMode = cssModeFor(manifest, set, runtime.vendorRoot)
 				return {
 					set,
 					...(manifest[set]?.variant ? { variant: manifest[set].variant } : {}),
 					...(cssMode ? { cssMode } : {}),
 					prefix:
 						manifest[set]?.prefix ??
-						sourceFor(set, context.vendorRoot).prefix(set),
+						sourceFor(set, runtime.vendorRoot).prefix(set),
 				}
 			})
 			const entries = flatten(manifest)
 			const rows = entries.map((entry) => {
-				const eff = effectiveRef(manifest, entry, context.vendorRoot)
+				const eff = effectiveRef(manifest, entry, runtime.vendorRoot)
 				return {
 					id: `${entry.set}/${entry.name}`,
 					resolved: formatRef(eff),
 					...(entry.as ? { as: entry.as } : {}),
-					component: nameFor(manifest, entry, context.vendorRoot),
+					component: nameFor(manifest, entry, runtime.vendorRoot),
 				}
 			})
-			if (input.json) {
-				console.log(JSON.stringify({ libraries, icons: rows }))
-				return
-			}
-			for (const lib of libraries) {
-				const annotations = [
-					lib.prefix,
-					...(lib.cssMode ? [`cssMode=${lib.cssMode}`] : []),
-					...(lib.variant ? [`variant=${lib.variant}`] : []),
-				].join(' · ')
-				console.log(`${lib.set} (${annotations})`)
-				const libRows = rows.filter((r) => r.id.startsWith(`${lib.set}/`))
-				if (libRows.length === 0) {
-					console.log('  (no icons)')
-					continue
-				}
-				const width = Math.max(...libRows.map((r) => r.resolved.length))
-				for (const row of libRows) {
-					console.log(`  ${row.resolved.padEnd(width)}  ${row.component}`)
-				}
-			}
+			return { libraries, icons: rows }
 		},
 
 		etch: async ({ input, context }) => {
-			const manifest = loadManifest(context.manifestPath)
+			const runtime = runtimeContext(context)
+			const manifest = loadManifest(runtime.manifestPath)
 			if (!manifest || flatten(manifest).length === 0) {
-				fail('manifest is empty — run `sigil add <set>/<name>` first')
+				fail('manifest_empty', 'manifest is empty — add icons first')
 			}
 			if (input.atlas && !input.jsx) {
 				fail(
-					'--atlas requires --jsx react, --jsx solid, --jsx octane, or --jsx tsrx',
+					'atlas_requires_component_renderer',
+					'atlas requires jsx react, solid, octane, or tsrx',
 				)
 			}
 			if (input.format && input.jsx) {
-				fail('--format and --jsx cannot be combined')
+				fail('conflicting_renderers', 'format and jsx cannot be combined')
 			}
-			const named = await resolveManifest(manifest, context.vendorRoot)
+			const named = await resolveManifest(manifest, runtime.vendorRoot)
 			const renderer = renderers[input.format ?? input.jsx ?? 'svg']!
 
 			if (renderer.defaultFile) {
@@ -513,7 +467,7 @@ app.run({
 								: importPathFor(out),
 					})
 				} catch (e) {
-					fail((e as Error).message)
+					fail('render_failed', (e as Error).message)
 				}
 				mkdirSync(dirname(out), { recursive: true })
 				writeFileSync(out, files[0]!.content)
@@ -521,18 +475,25 @@ app.run({
 				for (const file of extraFiles) {
 					writeFileSync(join(dirname(out), file.path), file.content)
 				}
-				const suffix =
-					extraFiles.length > 0
-						? ` + ${extraFiles.map((file) => join(dirname(out), file.path)).join(', ')}`
-						: ''
-				console.log(`etched ${named.length} icons → ${out}${suffix}`)
+				return {
+					icons: named.length,
+					output: out,
+					files: [
+						out,
+						...extraFiles.map((file) => join(dirname(out), file.path)),
+					],
+				}
 			} else {
 				const files = renderer.render(named)
 				mkdirSync(input.output, { recursive: true })
 				for (const file of files) {
 					writeFileSync(join(input.output, file.path), file.content)
 				}
-				console.log(`etched ${files.length} icons → ${input.output}/`)
+				return {
+					icons: files.length,
+					output: input.output,
+					files: files.map((file) => join(input.output, file.path)),
+				}
 			}
 		},
 	},
