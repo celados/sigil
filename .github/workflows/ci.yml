@@ -16,6 +16,12 @@ jobs:
           # argc v7 uses Bun's current JSON5 runtime API; pinning an old Bun
           # version turns valid input parsing into a runtime compatibility gap.
           bun-version: latest
+      - name: Configure Celados npm registry
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          printf '%s\n' '@celados:registry=https://npm.celados.com' > .npmrc
+          printf '%s\n' "//npm.celados.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
       - run: bun install
       - run: bun --version
       - run: bun run check
