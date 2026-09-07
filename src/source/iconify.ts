@@ -70,13 +70,19 @@ export const iconifySource: IconSource = {
 		if (opts?.limit) url.searchParams.set('limit', String(opts.limit))
 		const data = (await getJson(url)) as SearchResponse
 
-		const hits: IconRef[] = data.icons.flatMap((id) => {
-			const colon = id.indexOf(':')
-			if (colon === -1) return []
-			return [{ set: id.slice(0, colon), name: id.slice(colon + 1) }]
-		})
+		const hits: IconRef[] = data.icons
+			.flatMap((id) => {
+				const colon = id.indexOf(':')
+				if (colon === -1) return []
+				return [{ set: id.slice(0, colon), name: id.slice(colon + 1) }]
+			})
+			// Iconify clamps very small limits server-side, but the CLI contract
+			// still promises that `limit` bounds the returned hits.
+			.slice(0, opts?.limit ?? Number.POSITIVE_INFINITY)
 		const sets: Record<string, { title: string; license?: string }> = {}
+		const hitSets = new Set(hits.map((hit) => hit.set))
 		for (const [prefix, info] of Object.entries(data.collections ?? {})) {
+			if (!hitSets.has(prefix)) continue
 			sets[prefix] = {
 				title: info.name,
 				...(info.license?.spdx || info.license?.title

@@ -217,7 +217,7 @@ await app.run({
 
 			let results
 			let scope: string[] | 'all' | null
-			if (input.set) {
+			if (input.set && input.set !== '*') {
 				// 显式单库:已 vendor 走本地(含 API 隐藏的 deprecated 图标),否则 API
 				scope = [input.set]
 				const local = sourceFor(input.set, runtime.vendorRoot)
@@ -230,8 +230,8 @@ await app.run({
 						}),
 					),
 				]
-			} else if (input.all || used.length === 0) {
-				// 显式全局,或冷项目(尚未 use 任何库)→ iconify 全索引发现
+			} else if (input.set === '*' || used.length === 0) {
+				// set: '*' 显式全局;冷项目(尚未 use 任何库)也退回全局发现
 				scope = 'all'
 				results = [
 					await attempt(

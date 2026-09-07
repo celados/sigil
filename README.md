@@ -7,7 +7,7 @@ them in a manifest, and codegen is a pure projection of it.
 sigil sources '{}'                        # list supported libraries/sources
 sigil use "{ sets: ['lucide', 'svgl'] }"  # declare libraries + vendor locally
 sigil search "{ query: 'house' }"          # scoped to declared libraries, offline
-sigil search "{ query: 'github', all: true }"  # global discovery via Iconify
+sigil search "{ query: 'github', set: '*' }"   # global discovery via Iconify
 sigil add "{ refs: ['lucide/house', 'lucide/menu', 'svgl/github'] }"
 sigil etch "{ output: 'public/icons.css', format: 'css' }"  # standalone HTML / file://
 sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"      # component module

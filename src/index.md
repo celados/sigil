@@ -37,8 +37,11 @@ hand-edited.
    ```bash
    sigil search "{ query: 'house' }"
    sigil search "{ query: 'github', set: 'svgl' }"
-   sigil search "{ query: 'github', all: true, limit: 20 }"
+   sigil search "{ query: 'github', set: '*', limit: 20 }"
    ```
+
+   Omit `set` to search declared libraries. Pass a concrete set ID to focus one
+   library, or `set: '*'` for global Iconify discovery.
 
 4. Add explicit refs. `add` auto-declares an unknown set, but `use` is the
    explicit provisioning path:

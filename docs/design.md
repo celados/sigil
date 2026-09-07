@@ -13,7 +13,7 @@ codegen 是 manifest 的纯投影。
 sigil sources '{}'                         # 列出支持的 source
 sigil use "{ sets: ['lucide', 'svgl'] }"    # 声明库 + vendor 到本地
 sigil search "{ query: 'house' }"           # 默认只搜已声明库:本地、离线
-sigil search "{ query: 'github', all: true }" # 全局发现(iconify 索引)
+sigil search "{ query: 'github', set: '*' }" # 全局发现(iconify 索引)
 sigil add "{ refs: ['lucide/house', 'lucide/menu'] }"
 sigil etch "{ output: 'public/icons.css', format: 'css' }"
 sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"
@@ -32,12 +32,12 @@ sigil etch "{ output: 'public/svg' }"       # 无 jsx → dump 独立 .svg 文�
 | --------- | ----------------- | -------------------------------------------------------------- |
 | `sources` | registry/catalog  | 列出内置可 vendor 的 source 与 Iconify fallback                |
 | `use`     | 写 `dependencies` | 声明库 + **provision**(vendor 到本地)                          |
-| `search`  | `npm search`      | 默认作用域 = 已 use 的库(本地、离线);`all: true` 全局发现      |
+| `search`  | `npm search`      | 默认作用域 = 已 use 的库(本地、离线);`set: '*'` 全局发现       |
 | `add`     | `pnpm add`        | 校验存在性后写入 `icons.json`;未 use 的库自动声明(stderr 提示) |
 | `etch`    | `install/codegen` | 读 manifest → 解析 → 生成文件,**纯投影**                       |
 
 锁库之后日常 search/add/etch **完全离线**;`api.iconify.design` 只在
-`all: true` 发现和长尾库兜底时出场。
+`set: '*'` 发现和长尾库兜底时出场。
 
 `sources` 是非交互的能力发现命令;空 `use` 输入也打印同一份列表,作为不确定
 要声明哪个库时的低摩擦入口。不要把支持列表拼进 `list`: `list` 表达当前
@@ -120,7 +120,7 @@ cache 而非项目目录:
 - 此后 search/resolve/etch 全走本地文件:快、离线、且能搜到 API 索引
   隐藏的图标(如 deprecated 项)和本地 tags 元数据。
 - iconify API 的定位是**发现工具 + 长尾兜底**,不在主路径上:
-  `all: true` 全局发现用它;未注册专属 adapter 的 set(mdi、carbon…)
+  `set: '*'` 全局发现用它;未注册专属 adapter 的 set(mdi、carbon…)
   的 add/etch 兜底用它。两边对同一 set 的图标命名一致(adapter 镜像
   Iconify 命名),ref 完全可移植。
 - 多个 set 的 vendor 与 resolve 全部并发(按 set 分组 `Promise.all`)。
@@ -308,7 +308,7 @@ context: { manifest?: string }   # 默认 ./icons.json;--context 或 ARGC_CTX �
 
 sigil sources '{}'
 sigil use "{ sets: [...], variant?, prefix?, cssMode? }"
-sigil search "{ query, set?, all?, limit? }"
+sigil search "{ query, set?: '*' | string, limit? }"
 sigil add "{ refs: [...], as? }"
 sigil remove "{ refs: [...] }"       # 裸 set 名删整个库
 sigil list '{}'

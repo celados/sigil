@@ -66,10 +66,10 @@ export const schema = {
 	search: c
 		.meta({
 			description:
-				'Search icons. Default scope: libraries declared via use (local, offline); all searches the full Iconify index for discovery.',
+				'Search icons. Omit set for declared libraries, pass a set ID for one library, or pass * for global Iconify discovery.',
 			examples: [
 				'sigil search "{ query: \'house\' }"',
-				'sigil search "{ query: \'github\', all: true }"',
+				"sigil search \"{ query: 'github', set: '*' }\"",
 				"sigil search \"{ query: 'home', set: 'lucide' }\"",
 			],
 		})
@@ -77,8 +77,7 @@ export const schema = {
 			s(
 				v.object({
 					query: v.string(),
-					set: v.optional(v.string()),
-					all: v.optional(v.boolean(), false),
+					set: v.optional(v.union([v.literal('*'), v.string()])),
 					limit: v.optional(
 						v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(999)),
 						64,

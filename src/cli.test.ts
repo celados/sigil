@@ -50,6 +50,23 @@ describe('argc v7 command surface', () => {
 		expect(result.stderr.toString()).toBe('')
 	})
 
+	test('search scope is one set field without an all toggle', () => {
+		const { result } = run(['@schema', '.search'])
+		const stdout = result.stdout.toString()
+
+		expect(result.exitCode).toBe(0)
+		expect(stdout).toContain('set?: "*" | string')
+		expect(stdout).not.toContain('all?:')
+	})
+
+	test('search rejects the removed all toggle', () => {
+		const { result } = run(['search', "{ query: 'house', all: true }"])
+
+		expect(result.exitCode).toBe(1)
+		expect(result.stderr.toString()).toContain('at: all')
+		expect(result.stderr.toString()).toContain('unknown key')
+	})
+
 	test('add rejects separator DSL as an invalid ref', () => {
 		const { cwd, result } = run(['add', "{ refs: ['lucide/house+menu'] }"])
 
