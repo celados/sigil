@@ -11,7 +11,6 @@ import {
 	loadManifest,
 	saveManifest,
 } from './manifest.ts'
-import { derivePrefix } from './source/iconify.ts'
 
 describe('effectiveName', () => {
 	test('no variant → base name untouched', () => {
@@ -31,21 +30,16 @@ describe('effectiveName', () => {
 })
 
 describe('componentName', () => {
-	test('prefix + PascalCase(base name) — variant never leaks in', () => {
-		expect(componentName({ set: 'ph', name: 'airplane-taxiing' }, 'Ph')).toBe(
-			'PhAirplaneTaxiing',
+	test('Icon + PascalCase(base name) — no library prefix, variant never leaks in', () => {
+		expect(componentName({ set: 'ph', name: 'airplane-taxiing' })).toBe(
+			'IconAirplaneTaxiing',
 		)
 	})
 
-	test('as overrides the name part, prefix stays', () => {
-		expect(
-			componentName({ set: 'lucide', name: 'menu', as: 'Hamburger' }, 'Lu'),
-		).toBe('LuHamburger')
-	})
-
-	test('rejects lowercase prefix', () => {
-		expect(() => componentName({ set: 'lucide', name: 'house' }, 'lu')).toThrow(
-			'uppercase',
+	test('as replaces the name part, so a library swap keeps the component name', () => {
+		expect(componentName({ set: 'lucide', name: 'house' })).toBe('IconHouse')
+		expect(componentName({ set: 'tabler', name: 'home', as: 'House' })).toBe(
+			'IconHouse',
 		)
 	})
 })
@@ -64,16 +58,15 @@ describe('flatten + collisions', () => {
 		])
 	})
 
-	test('cross-set same name does not collide (per-set prefix)', () => {
+	test('cross-set same name collides — names are one app namespace', () => {
 		expect(() =>
 			assertNoCollisions(
 				flatten({
 					lucide: { icons: ['github'] },
 					'simple-icons': { icons: ['github'] },
 				}),
-				derivePrefix,
 			),
-		).not.toThrow()
+		).toThrow('collision')
 	})
 
 	test('same-set duplicate via as collides loudly', () => {
@@ -82,7 +75,6 @@ describe('flatten + collisions', () => {
 				flatten({
 					lucide: { icons: ['github', { name: 'github-light', as: 'Github' }] },
 				}),
-				derivePrefix,
 			),
 		).toThrow('collision')
 	})
@@ -99,6 +91,18 @@ describe('cssMode', () => {
 			})
 			expect(loadManifest(path)?.custom?.cssMode).toBe('image')
 			expect(readFileSync(path, 'utf-8')).toContain('"cssMode": "image"')
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	test('loadManifest rejects the removed set-level prefix', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'sigil-manifest-'))
+		const path = join(dir, 'icons.json')
+
+		try {
+			writeFileSync(path, '{"lucide":{"prefix":"Lu","icons":[]}}')
+			expect(() => loadManifest(path)).toThrow('no longer exists')
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}

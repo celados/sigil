@@ -8,8 +8,8 @@ const icon: NamedIcon = {
 	ref: { set: 'lucide', name: 'house' },
 	body: '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3" /></g>',
 	viewBox: '0 0 24 24',
-	componentName: 'LuHouse',
-	fileName: 'lu-house',
+	componentName: 'IconHouse',
+	fileName: 'house',
 }
 
 describe('reactRenderer atlas', () => {
@@ -32,14 +32,14 @@ describe('reactRenderer atlas', () => {
 		expect(atlasFile!.content).toContain(
 			"import { useEffect, useMemo, useRef, useState } from 'react'",
 		)
-		expect(atlasFile!.content).toContain("import { LuHouse } from './icons'")
+		expect(atlasFile!.content).toContain("import { IconHouse } from './icons'")
 		expect(atlasFile!.content).toContain(
 			"import type { IconProps } from './icons'",
 		)
 		expect(atlasFile!.content).toContain('const iconAtlasCss = ".sigil-atlas')
 		expect(atlasFile!.content).toContain('export const iconAtlasItems')
 		expect(atlasFile!.content).toContain(
-			'{ ref: "lucide/house", name: "house", componentName: "LuHouse", Icon: LuHouse }',
+			'{ ref: "lucide/house", name: "house", componentName: "IconHouse", Icon: IconHouse }',
 		)
 		expect(atlasFile!.content).toContain('export const IconAtlas')
 		expect(atlasFile!.content).toContain(

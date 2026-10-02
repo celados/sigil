@@ -62,7 +62,7 @@ manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
 人和 agent 都可直接编辑,`add`/`remove` 只是便捷写入器。
 
 顶层按 set 分组——一个 set 出现在 manifest 里(哪怕 icons 为空)就代表
-"项目使用这个库"(`use` 的产物);variant/prefix/cssMode 是 **set 级设计决策**:
+"项目使用这个库"(`use` 的产物);variant/cssMode 是 **set 级设计决策**:
 
 ```jsonc
 {
@@ -89,14 +89,18 @@ manifest 状态,混入全局 catalog 会削弱脚本输出的信号。
   resolve 时拼后缀;规则全库统一(镜像 Iconify 约定):variant 等于 adapter
   的 `defaultVariant` 时无后缀,否则 `name-{variant}`。adapter 只声明
   defaultVariant 一个字符串,无泛化接口。
-- **组件名用 base 名**(`PhHouse`,variant 永不进组件名):切 variant =
-  改 manifest 一行 + re-etch,所有 import 零改动。
-- **组件名前缀留给 adapter**(react-icons 风格):`lucide → Lu → LuHouse`、
-  `simple-icons → Si`。set 级 `prefix` 字段可覆盖(如统一 `Icon` 风格)。
-  prefix spec 只有一条:**首字母必须大写**。跨库重名天然不撞。
-- iconify fallback 的前缀推导:单词取头两字母(`lucide → Lu`),多段取各段
-  首字母(`icon-park-outline → Ipo`,与 `icon-park-solid → Ips` 区分)。
-- `as` 替换 PascalCase(name) 部分,前缀保留(`LuHamburger`)。
+- **组件名是应用级语义名,不带库前缀**:`Icon` + (`as` | PascalCase(base 名)),
+  如 `lucide/house → IconHouse`。洞察:一个应用的图标通常不足 100 个,组件名
+  是应用对图标的命名契约,来自哪个库是实现细节。库前缀(`LuHouse`)让换库
+  (Lucide → Tabler)变成全量 import 改名,且库之间图标名本就不同
+  (`house` vs `home`),只统一前缀也挡不住改名。
+  - 切 variant:改 manifest 一行 + re-etch,import 零改动(variant 永不进名)。
+  - 换库:改 ref,改了名的用 `as` 钉回旧名(`tabler/home` as `House` →
+    仍是 `IconHouse`),import 零改动。
+  - 统一 `Icon` 前缀也是更好的可搜索性:`rg 'Icon[A-Z]'` 一次找全。
+  - 不可配置前缀:多一个旋钮不带来价值,反而让"名字即契约"多一个变量。
+  - 文件名与 CSS class 用不带前缀的语义名:`house.svg`、`.sigil-house`。
+- 所有库共享一个命名空间:`lucide/github` 与 `svgl/github` 撞名,用 `as` 解决。
 - **CSS 颜色模型也是 set 级决策**:bundled monochrome adapter 默认
   `mask`,`svgl` 默认 `image`;长尾 Iconify/private source 不做猜测,
   必须通过 `cssMode` 显式覆盖。
@@ -157,8 +161,6 @@ export type ResolvedIcon = {
 
 export interface IconSource {
 	readonly id: string
-	// set → 组件名前缀(lucide → Lu);spec:首字母必须大写
-	prefix(set: string): string
 	// CSS 输出的安全默认;颜色模型不明时不声明
 	cssMode?(set: string): 'mask' | 'image'
 	// 该库"无后缀"的 variant 名(ph → regular);无 variant 概念的库不声明
@@ -226,7 +228,7 @@ CSS renderer 将每个归一化 SVG 用 `encodeURIComponent` 序列化为 data U
   SVG 内的 opacity 保留,所以 duotone 仍有深浅层次。
 - `image`:per-icon rule 用 background image,保留 gradient/多色 fill,
   但不继承 `currentColor`。
-- class 名直接复用稳定 file naming:`LuHouse → .sigil-lu-house`。
+- class 名直接复用稳定 file naming:`IconHouse → .sigil-house`。
 - 每条 rule 保留 ref/license 注释;任一 icon 缺失时在 render/write 前失败。
 
 ### 共享外壳
@@ -251,7 +253,7 @@ const Icon = ({ size = '1em', ...props }: IconProps & { viewBox: string }) => (
 )
 
 // lucide/github · ISC
-export const LuGithub = (props: IconProps) => (
+export const IconGithub = (props: IconProps) => (
 	<Icon viewBox="0 0 24 24" {...props}>
 		<path d="..." />
 	</Icon>
@@ -307,7 +309,7 @@ completions。
 context: { manifest?: string }   # 默认 ./icons.json;--context 或 ARGC_CTX 传入
 
 sigil sources '{}'
-sigil use "{ sets: [...], variant?, prefix?, cssMode? }"
+sigil use "{ sets: [...], variant?, cssMode? }"
 sigil search "{ query, set?: '*' | string, limit? }"
 sigil add "{ refs: [...], as? }"
 sigil remove "{ refs: [...] }"       # 裸 set 名删整个库

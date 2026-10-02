@@ -49,7 +49,6 @@ export const schema = {
 				v.object({
 					sets: v.optional(v.array(v.string()), []),
 					variant: v.optional(v.string()),
-					prefix: v.optional(v.string()),
 					cssMode: v.optional(v.picklist(['mask', 'image'])),
 				}),
 			),

@@ -8,8 +8,8 @@ const icon: NamedIcon = {
 	ref: { set: 'lucide', name: 'house' },
 	body: '<path d="M3 3" />',
 	viewBox: '0 0 24 24',
-	componentName: 'LuHouse',
-	fileName: 'lu-house',
+	componentName: 'IconHouse',
+	fileName: 'house',
 }
 
 describe('solidRenderer', () => {

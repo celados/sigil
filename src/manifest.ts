@@ -10,8 +10,6 @@ export type IconEntry = string | { name: string; as: string }
 export type SetConfig = {
 	/** Set 级 variant(duotone / 20-solid / filled…);不填 = adapter 默认 */
 	variant?: string
-	/** 覆盖 adapter 的组件名前缀;不填 = adapter 提供 */
-	prefix?: string
 	/**
 	 * Overrides the source default when CSS color semantics cannot be inferred
 	 * safely.
@@ -20,7 +18,7 @@ export type SetConfig = {
 	icons: IconEntry[]
 }
 
-/** Manifest 顶层即 set → 配置的 map:variant/prefix 是 set 级设计决策,挂在这里 */
+/** Manifest 顶层即 set → 配置的 map:variant/cssMode 是 set 级设计决策,挂在这里 */
 export type Manifest = Record<string, SetConfig>
 
 /** 展开后的内部形态;name 是 base 名,不含 set.variant 后缀 */
@@ -35,6 +33,11 @@ export function loadManifest(path: string): Manifest | null {
 	const raw = JSON.parse(readFileSync(path, 'utf-8')) as Manifest
 	// 早失败:manifest 可手编辑,坏 set/name 在 load 时就报出来
 	for (const [set, config] of Object.entries(raw)) {
+		if ('prefix' in config) {
+			throw new Error(
+				`set "${set}" declares "prefix", which no longer exists — every component is named ${ICON_PREFIX}<Name>; delete the field and pin any renamed icon with "as"`,
+			)
+		}
 		if (config.cssMode && !['mask', 'image'].includes(config.cssMode)) {
 			throw new Error(
 				`invalid cssMode "${config.cssMode}" for set "${set}" — expected "mask" or "image"`,
@@ -54,7 +57,6 @@ export function saveManifest(path: string, manifest: Manifest): void {
 		// 空 icons 的 set 保留:它是 `use` 声明的"项目使用这个库"标记
 		sorted[set] = {
 			...(config.variant ? { variant: config.variant } : {}),
-			...(config.prefix ? { prefix: config.prefix } : {}),
 			...(config.cssMode ? { cssMode: config.cssMode } : {}),
 			icons: [...config.icons].sort((a, b) =>
 				entryName(a).localeCompare(entryName(b)),
@@ -92,18 +94,17 @@ export function effectiveName(
 	return `${name}-${variant}`
 }
 
-/**
- * 组件名 = (set.prefix 覆盖 ?? adapter 前缀) + (as | PascalCase(base 名))。 用 base 名而非
- * effective 名:切换 set.variant 不改任何组件名/import。 前缀 spec:首字母大写——保证 JSX
- * 组件名合法,跨库重名天然不撞。
- */
-export function componentName(entry: FlatEntry, prefix: string): string {
-	if (!/^[A-Z]/.test(prefix)) {
-		throw new Error(
-			`prefix "${prefix}" for set "${entry.set}" must start with an uppercase letter`,
-		)
-	}
-	const full = prefix + (entry.as ?? pascalCase(entry.name))
+/** 组件名统一前缀。 不带库前缀:组件名是应用对图标的语义命名,换库只改 manifest 的 ref(必要时补 `as` 钉住旧名),import 零改动。 */
+export const ICON_PREFIX = 'Icon'
+
+/** 图标的语义名 = as | PascalCase(base 名);用 base 名而非 effective 名,切 variant 不改名 */
+export function iconName(entry: FlatEntry): string {
+	return entry.as ?? pascalCase(entry.name)
+}
+
+/** 组件名 = ICON_PREFIX + 语义名 */
+export function componentName(entry: FlatEntry): string {
+	const full = ICON_PREFIX + iconName(entry)
 	if (!/^[A-Za-z_$][\w$]*$/.test(full)) {
 		throw new Error(
 			`"${entry.set}/${entry.name}" derives invalid identifier "${full}" — set "as" to override`,
@@ -112,14 +113,11 @@ export function componentName(entry: FlatEntry, prefix: string): string {
 	return full
 }
 
-/** 撞名直接报错,绝不静默覆盖 */
-export function assertNoCollisions(
-	entries: FlatEntry[],
-	prefixFor: (set: string) => string,
-): void {
+/** 撞名直接报错,绝不静默覆盖;跨库同名(lucide/github vs svgl/github)同样撞 */
+export function assertNoCollisions(entries: FlatEntry[]): void {
 	const seen = new Map<string, string>()
 	for (const entry of entries) {
-		const name = componentName(entry, prefixFor(entry.set))
+		const name = componentName(entry)
 		const id = `${entry.set}/${entry.name}`
 		const prev = seen.get(name)
 		if (prev) {

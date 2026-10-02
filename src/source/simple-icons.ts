@@ -36,7 +36,6 @@ export function createSimpleIconsSource(dir: string): IconSource {
 	return {
 		id: 'simple-icons',
 		// Iconify fallback 推导规则：多段取各段首字母 → `Si`
-		prefix: () => 'Si',
 		cssMode: () => 'mask',
 		vendored: () => existsSync(iconsDir),
 

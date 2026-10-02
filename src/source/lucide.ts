@@ -43,7 +43,6 @@ export function createLucideSource(dir: string): IconSource {
 
 	return {
 		id: 'lucide',
-		prefix: () => 'Lu',
 		cssMode: () => 'mask',
 		vendored: () => existsSync(iconsDir),
 

@@ -23,11 +23,6 @@ export type ResolvedIcon = {
 export interface IconSource {
 	readonly id: string
 	/**
-	 * Set → 组件名前缀(lucide → Lu → LuGithubLight)。 spec:必须以大写字母开头——这同时保证了 JSX 组件名合法,
-	 * 且跨库重名(lucide/github vs simple-icons/github)天然不撞。
-	 */
-	prefix(set: string): string
-	/**
 	 * Safe CSS default; adapters with ambiguous color semantics require a
 	 * manifest override.
 	 */

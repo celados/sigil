@@ -32,10 +32,10 @@ including documents opened directly through `file://`:
 
 ```html
 <link rel="stylesheet" href="./icons.css" />
-<span class="sigil sigil-lu-house" aria-hidden="true"></span>
+<span class="sigil sigil-house" aria-hidden="true"></span>
 
 <button aria-label="Home">
-	<span class="sigil sigil-lu-house" aria-hidden="true"></span>
+	<span class="sigil sigil-house" aria-hidden="true"></span>
 </button>
 ```
 
@@ -76,9 +76,10 @@ bun add github:celados/sigil   # then `bunx sigil ...`
   project directory.
 - `etch` is a deterministic, atomic projection of `icons.json`: any missing icon
   fails the whole run without writing a file.
-- Component names are stable across variants (`PhHouse` whether weight is
-  `regular` or `duotone`), so switching a set's variant is a one-line manifest
-  change with zero import churn.
+- Component names are app-level, not library-level: always `Icon` + `as` or
+  PascalCase(name) (`IconHouse` whether it comes from Lucide or Phosphor, any
+  weight). Switching a variant or swapping a library is a manifest change with
+  zero import churn; pin a renamed icon with `as` (`tabler/home` as `House`).
 
 Run `sigil sources` to see the supported sources. Bundled adapters are
 `heroicons`, `lucide`, `ph`, `simple-icons`, `svgl`, and `tabler`; any other set
@@ -99,7 +100,7 @@ Commands return structured YAML. Pass a non-default manifest with
 
 ## Manifest (`icons.json`)
 
-Grouped by set; `variant`, `prefix`, and `cssMode` are set-level design decisions:
+Grouped by set; `variant` and `cssMode` are set-level design decisions:
 
 ```jsonc
 {

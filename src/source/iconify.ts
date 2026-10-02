@@ -46,20 +46,8 @@ async function fetchSetInfo(
 	}
 }
 
-/**
- * React-icons 风格的短前缀:单词取头两个字母(lucide → Lu), 多段取各段首字母(simple-icons → Si,
- * icon-park-outline → Ipo)。 多段取全部首字母而非前两段,避免 icon-park-{outline,solid} 同前缀。
- */
-export function derivePrefix(set: string): string {
-	const parts = set.split('-')
-	const raw =
-		parts.length > 1 ? parts.map((p) => p.charAt(0)).join('') : set.slice(0, 2)
-	return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()
-}
-
 export const iconifySource: IconSource = {
 	id: 'iconify',
-	prefix: derivePrefix,
 
 	async search(query, opts) {
 		const url = new URL(`${API}/search`)

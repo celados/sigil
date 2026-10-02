@@ -82,10 +82,16 @@ For a long-tail or private source, set `cssMode` explicitly with `use` or in
 
 ## Manifest Model
 
-`variant`, `prefix`, and `cssMode` are set-level decisions. Icons store base
-names, so changing a Phosphor weight remains a one-line manifest change and
-component imports stay stable. `as` replaces only the PascalCase name portion;
-the library prefix remains.
+`variant` and `cssMode` are set-level decisions. Icons store base names, so
+changing a Phosphor weight remains a one-line manifest change and component
+imports stay stable.
+
+Every component is `Icon` + the icon's app name: `as` when set, otherwise
+PascalCase(base name). There is no library prefix, so all sets share one
+namespace (`lucide/house` → `IconHouse`, CSS `.sigil-house`, `house.svg`).
+When swapping libraries, replace the ref and pin the old name with `as`
+(`{ "name": "home", "as": "House" }` under `tabler` still yields `IconHouse`),
+so imports never change.
 
 Use a bare set ref to remove an entire library and a full `set/name` ref to
 remove one icon:
@@ -99,7 +105,8 @@ sigil remove "{ refs: ['svgl'] }"
 
 - `missing_upstream` / `icon_not_found`: search the set for the exact base name,
   fix the manifest or ref, then retry.
-- `component_collision`: add `as` to one ref or override the set prefix.
+- `component_collision`: two refs (possibly from different sets) produce the
+  same name; give one of them an `as`.
 - `invalid_ref`: use one canonical `set/name` string per array element.
 - `atlas_requires_component_renderer`: set `jsx` to `react`, `solid`, `octane`,
   or `tsrx` when `atlas` is true.

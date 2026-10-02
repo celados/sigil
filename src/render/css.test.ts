@@ -10,8 +10,8 @@ const icons: NamedIcon[] = [
 		body: '<path stroke="currentColor" opacity=".5" d="M3 12h18"/>',
 		viewBox: '0 0 24 24',
 		license: { spdx: 'ISC' },
-		componentName: 'LuHouse',
-		fileName: 'lu-house',
+		componentName: 'IconHouse',
+		fileName: 'house',
 		cssMode: 'mask',
 	},
 	{
@@ -19,8 +19,8 @@ const icons: NamedIcon[] = [
 		body: '<path fill="#ff0066" d="M0 0h32v32H0z"/>',
 		viewBox: '0 0 32 32',
 		license: { title: 'MIT' },
-		componentName: 'SvBrand',
-		fileName: 'sv-brand',
+		componentName: 'IconBrand',
+		fileName: 'brand',
 		cssMode: 'image',
 	},
 ]
@@ -43,7 +43,7 @@ describe('css renderer', () => {
 		const [file] = cssRenderer.render([icons[0]!])
 
 		expect(file?.content).toContain('/* lucide/house · ISC */')
-		expect(file?.content).toContain('.sigil-lu-house')
+		expect(file?.content).toContain('.sigil-house')
 		expect(file?.content).toContain('background-color: currentColor')
 		expect(file?.content).toContain('mask-mode: alpha')
 		expect(file?.content).toContain('%20opacity%3D%22.5%22')
@@ -54,7 +54,7 @@ describe('css renderer', () => {
 		const [file] = cssRenderer.render([icons[1]!])
 
 		expect(file?.content).toContain('/* svgl/brand · MIT */')
-		expect(file?.content).toContain('.sigil-sv-brand')
+		expect(file?.content).toContain('.sigil-brand')
 		expect(file?.content).toContain('background: url("data:image/svg+xml,')
 		expect(file?.content).toContain('xmlns%3Axlink')
 		expect(file?.content).toContain('%23ff0066')

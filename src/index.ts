@@ -14,6 +14,7 @@ import {
 	effectiveName,
 	entryName,
 	flatten,
+	iconName,
 	loadManifest,
 	saveManifest,
 } from './manifest.ts'
@@ -63,12 +64,6 @@ async function attempt<T>(promise: Promise<T>): Promise<T> {
 	}
 }
 
-/** Set 级 prefix 覆盖 > adapter 前缀 */
-function prefixFor(manifest: Manifest, vendorRoot: string) {
-	return (set: string): string =>
-		manifest[set]?.prefix ?? sourceFor(set, vendorRoot).prefix(set)
-}
-
 function cssModeFor(manifest: Manifest, set: string, vendorRoot: string) {
 	return manifest[set]?.cssMode ?? sourceFor(set, vendorRoot).cssMode?.(set)
 }
@@ -87,14 +82,6 @@ function effectiveRef(
 	return { set: entry.set, name }
 }
 
-function nameFor(
-	manifest: Manifest,
-	entry: FlatEntry,
-	vendorRoot: string,
-): string {
-	return componentName(entry, prefixFor(manifest, vendorRoot)(entry.set))
-}
-
 /** 解析 manifest 全量;任何缺失 → 原子失败,不产出任何文件 */
 async function resolveManifest(
 	manifest: Manifest,
@@ -102,7 +89,7 @@ async function resolveManifest(
 ): Promise<NamedIcon[]> {
 	const entries = flatten(manifest)
 	try {
-		assertNoCollisions(entries, prefixFor(manifest, vendorRoot))
+		assertNoCollisions(entries)
 	} catch (e) {
 		fail('component_collision', (e as Error).message)
 	}
@@ -118,11 +105,11 @@ async function resolveManifest(
 	const byRef = new Map(icons.map((icon) => [formatRef(icon.ref), icon]))
 	return entries.map((entry, i) => {
 		const resolved = byRef.get(formatRef(refs[i]!))!
-		const component = nameFor(manifest, entry, vendorRoot)
 		return {
 			...resolved,
-			componentName: component,
-			fileName: kebabCase(component),
+			componentName: componentName(entry),
+			// 文件名/CSS class 不带前缀:`house.svg`、`.sigil-house`
+			fileName: kebabCase(iconName(entry)),
 			cssMode: cssModeFor(manifest, entry.set, vendorRoot),
 		}
 	})
@@ -134,7 +121,6 @@ function sourceRows(vendorRoot: string) {
 		const cssMode = source.cssMode?.(set)
 		return {
 			set,
-			prefix: source.prefix(set),
 			...(cssMode ? { cssMode } : {}),
 			...(source.defaultVariant
 				? { defaultVariant: source.defaultVariant }
@@ -146,7 +132,6 @@ function sourceRows(vendorRoot: string) {
 		bundled,
 		fallback: {
 			set: '<iconify-set>',
-			prefix: 'derived',
 			cssMode: 'manifest-required',
 			mode: 'iconify-api' as const,
 		},
@@ -158,21 +143,18 @@ await app.run({
 		use: async ({ input, context }) => {
 			const runtime = runtimeContext(context)
 			if (input.sets.length === 0) {
-				if (input.variant || input.prefix || input.cssMode) {
+				if (input.variant || input.cssMode) {
 					fail(
 						'set_options_require_single_set',
-						'variant, prefix, and cssMode require exactly one set',
+						'variant and cssMode require exactly one set',
 					)
 				}
 				return sourceRows(runtime.vendorRoot)
 			}
-			if (
-				(input.variant || input.prefix || input.cssMode) &&
-				input.sets.length !== 1
-			) {
+			if ((input.variant || input.cssMode) && input.sets.length !== 1) {
 				fail(
 					'set_options_require_single_set',
-					'variant, prefix, and cssMode require exactly one set',
+					'variant and cssMode require exactly one set',
 				)
 			}
 			const manifest = loadManifest(runtime.manifestPath) ?? defaultManifest()
@@ -182,7 +164,6 @@ await app.run({
 				}
 				const config = (manifest[set] ??= { icons: [] })
 				if (input.variant) config.variant = input.variant
-				if (input.prefix) config.prefix = input.prefix
 				if (input.cssMode) config.cssMode = input.cssMode
 			}
 			saveManifest(runtime.manifestPath, manifest)
@@ -199,7 +180,6 @@ await app.run({
 					const source = sourceFor(set, runtime.vendorRoot)
 					return {
 						set,
-						prefix: manifest[set]?.prefix ?? source.prefix(set),
 						mode: source.vendored?.() ? 'vendored' : 'iconify-api',
 					}
 				}),
@@ -333,10 +313,7 @@ await app.run({
 			}
 
 			try {
-				assertNoCollisions(
-					flatten(manifest),
-					prefixFor(manifest, runtime.vendorRoot),
-				)
+				assertNoCollisions(flatten(manifest))
 			} catch (e) {
 				fail('component_collision', (e as Error).message)
 			}
@@ -349,7 +326,7 @@ await app.run({
 						: { set: ref.set, name: ref.name }
 					return {
 						ref: formatRef(ref),
-						component: nameFor(manifest, entry, runtime.vendorRoot),
+						component: componentName(entry),
 					}
 				}),
 				skipped,
@@ -409,9 +386,6 @@ await app.run({
 					set,
 					...(manifest[set]?.variant ? { variant: manifest[set].variant } : {}),
 					...(cssMode ? { cssMode } : {}),
-					prefix:
-						manifest[set]?.prefix ??
-						sourceFor(set, runtime.vendorRoot).prefix(set),
 				}
 			})
 			const entries = flatten(manifest)
@@ -421,7 +395,7 @@ await app.run({
 					id: `${entry.set}/${entry.name}`,
 					resolved: formatRef(eff),
 					...(entry.as ? { as: entry.as } : {}),
-					component: nameFor(manifest, entry, runtime.vendorRoot),
+					component: componentName(entry),
 				}
 			})
 			return { libraries, icons: rows }

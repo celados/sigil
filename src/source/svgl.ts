@@ -71,7 +71,6 @@ export function createSvglSource(dir: string): IconSource {
 		id: 'svgl',
 		// svgl 只有 brand logo,无 weight/variant 概念
 		// defaultVariant 不声明 — 传入 resolve 的 name 直接就是文件的 sigil ref 名
-		prefix: () => 'Sv',
 		cssMode: () => 'image',
 
 		vendored: () => existsSync(libraryDir),

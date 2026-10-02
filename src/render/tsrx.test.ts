@@ -10,8 +10,8 @@ const icon: NamedIcon = {
 	body: '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3" /></g>',
 	viewBox: '0 0 24 24',
 	license: { spdx: 'ISC' },
-	componentName: 'LuHouse',
-	fileName: 'lu-house',
+	componentName: 'IconHouse',
+	fileName: 'house',
 }
 
 describe('tsrxRenderer', () => {
@@ -24,7 +24,7 @@ describe('tsrxRenderer', () => {
 
 	test('component uses the @{ } code-block body with a default-valued lazy prop', () => {
 		expect(file!.content).toContain(
-			"export function LuHouse(&{ size = '1em', ...props }: IconProps) @{",
+			"export function IconHouse(&{ size = '1em', ...props }: IconProps) @{",
 		)
 		// @{ } body emits the markup as the trailing output node — no return.
 		expect(file!.content).not.toContain('return (')
@@ -60,7 +60,7 @@ describe('tsrxRenderer', () => {
 		expect(iconsFile!.content).not.toContain('IconAtlas')
 		expect(atlasFile!.path).toBe('icons.atlas.tsrx')
 		expect(atlasFile!.content).toContain("import { track } from 'ripple'")
-		expect(atlasFile!.content).toContain("import { LuHouse } from './icons'")
+		expect(atlasFile!.content).toContain("import { IconHouse } from './icons'")
 		expect(atlasFile!.content).toContain('export function IconAtlas')
 		expect(atlasFile!.content).toContain('<style>')
 		expect(atlasFile!.content).toContain('.sigil-atlas')

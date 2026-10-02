@@ -9,8 +9,8 @@ const icon: NamedIcon = {
 	body: '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3" /></g>',
 	viewBox: '0 0 24 24',
 	license: { spdx: 'ISC' },
-	componentName: 'LuHouse',
-	fileName: 'lu-house',
+	componentName: 'IconHouse',
+	fileName: 'house',
 }
 
 describe('octaneRenderer', () => {
@@ -26,7 +26,7 @@ describe('octaneRenderer', () => {
 			"export type IconProps = Octane.JSX.IntrinsicElements['svg']",
 		)
 		expect(file!.content).toContain(
-			'export function LuHouse(props: IconProps) @{',
+			'export function IconHouse(props: IconProps) @{',
 		)
 	})
 
@@ -52,7 +52,7 @@ describe('octaneRenderer', () => {
 		expect(atlasFile!.content).not.toContain("from 'ripple'")
 		expect(atlasFile!.content).toContain('export function IconAtlas')
 		expect(atlasFile!.content).toContain(
-			"import { LuHouse } from './icons.tsrx'",
+			"import { IconHouse } from './icons.tsrx'",
 		)
 		expect(atlasFile!.content).toContain('<style>')
 		expect(atlasFile!.content).not.toContain('{iconAtlasCss')

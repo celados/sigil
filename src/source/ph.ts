@@ -53,7 +53,6 @@ export function createPhSource(dir: string): IconSource {
 	return {
 		id: 'ph',
 		// Iconify 推导规则:单段名 `ph` → 取前两字母 → `Ph`
-		prefix: () => 'Ph',
 		cssMode: () => 'mask',
 		// regular 是无后缀 variant:manifest 的 set.variant 据此决定是否拼后缀
 		defaultVariant: 'regular',
