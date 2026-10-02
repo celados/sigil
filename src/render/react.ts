@@ -2,7 +2,7 @@ import type { Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
 import { toJsxBody } from './jsx.ts'
-import { licenseTag } from './types.ts'
+import { licenseTag, rootAttrs } from './types.ts'
 
 import atlasCss from './atlas.css' with { type: 'text' }
 
@@ -12,8 +12,8 @@ import type { SVGProps } from 'react'
 
 export type IconProps = SVGProps<SVGSVGElement> & { size?: number | string }
 
-// 外壳保持中性:fill/stroke 语义在各图标 body 内,写死会破坏描边型图标。
-// props 展开在默认值之后,size/className 等永远可被调用方覆盖。
+// fill/stroke 语义由各图标作为根属性传入,子元素只靠继承,<svg> 上的 CSS 才能覆盖线宽。
+// props 展开在默认值之后,size/strokeWidth/className 永远可被调用方覆盖。
 const Icon = ({
 	size = '1em',
 	children,
@@ -185,7 +185,7 @@ export const reactRenderer: Renderer = {
 			(icon) =>
 				`// ${formatRef(icon.ref)}${licenseTag(icon)}\n` +
 				`export const ${icon.componentName} = (props: IconProps) => (\n` +
-				`\t<Icon viewBox="${icon.viewBox}" {...props}>${toJsxBody(icon.body)}</Icon>\n` +
+				`\t<Icon viewBox="${icon.viewBox}"${rootAttrs(icon, true)} {...props}>${toJsxBody(icon.body)}</Icon>\n` +
 				`)`,
 		)
 		const files = [

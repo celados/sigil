@@ -13,7 +13,7 @@ export type ResolvedIcon = {
 	ref: IconRef
 	/**
 	 * 归一化后的 <svg> 内部内容:alias/transform 已展开,ID 已唯一化。 各库的 fill/stroke 语义保留在 body
-	 * 内,渲染层不做猜测。
+	 * 内;etch 时统一提升到根 <svg>(svg-attrs.ts),adapter 不需要关心。
 	 */
 	body: string
 	viewBox: string

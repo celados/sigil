@@ -103,6 +103,26 @@ export const schema = {
 			),
 		),
 
+	preset: c
+		.meta({
+			description:
+				'Fill a preset of semantic icon slots from one library. Each slot becomes Icon<Slot> via as; re-running with another set swaps every slot in place, so imports never change. Empty input lists presets.',
+			examples: [
+				"sigil preset '{}'",
+				"sigil preset \"{ name: 'ff', set: 'lucide' }\"",
+				"sigil preset \"{ name: 'ff', set: 'tabler', slots: ['search', 'chevron-right'] }\"",
+			],
+		})
+		.input(
+			s(
+				v.object({
+					name: v.optional(v.picklist(['ff'])),
+					set: v.optional(v.string()),
+					slots: v.optional(v.array(v.string())),
+				}),
+			),
+		),
+
 	// 使用者是 agent:不设 rm/ls 这类人类向 alias,全名即一个 token
 	remove: c
 		.meta({

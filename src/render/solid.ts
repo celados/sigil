@@ -1,7 +1,7 @@
 import type { Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
-import { licenseTag } from './types.ts'
+import { licenseTag, rootAttrs } from './types.ts'
 
 import atlasCss from './atlas.css' with { type: 'text' }
 
@@ -14,17 +14,21 @@ import type { JSX } from '@solidjs/web'
 
 export type IconProps = Omit<JSX.SvgSVGAttributes<SVGSVGElement>, 'viewBox'> & {
 	size?: number | string
+	/** Defaults to the icon set's own width; CSS on the <svg> overrides it too. */
+	strokeWidth?: number | string
 }
 
-// Keep the shell neutral because each icon body owns its fill/stroke semantics.
+// Each icon passes its fill/stroke semantics as root attributes, so children
+// only inherit and CSS on the <svg> (e.g. stroke-width on hover) takes effect.
 const Icon = (props: IconProps & { viewBox: string }) => {
-	const rest = omit(props, 'size')
+	const rest = omit(props, 'size', 'strokeWidth')
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			width={props.size ?? '1em'}
 			height={props.size ?? '1em'}
 			{...rest}
+			stroke-width={props.strokeWidth ?? props['stroke-width']}
 		/>
 	)
 }
@@ -190,7 +194,7 @@ export const solidRenderer: Renderer = {
 			(icon) =>
 				`// ${formatRef(icon.ref)}${licenseTag(icon)}\n` +
 				`export const ${icon.componentName} = (props: IconProps) => (\n` +
-				`\t<Icon viewBox="${icon.viewBox}" {...props}>${icon.body}</Icon>\n` +
+				`\t<Icon viewBox="${icon.viewBox}"${rootAttrs(icon)} {...props}>${icon.body}</Icon>\n` +
 				`)`,
 		)
 		const files = [

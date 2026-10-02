@@ -233,9 +233,18 @@ CSS renderer 将每个归一化 SVG 用 `encodeURIComponent` 序列化为 data U
 
 ### 共享外壳
 
-每个模块一个 `Icon` 外壳 + 逐图标导出。外壳保持中性(只有
-xmlns/尺寸/viewBox),**不写死 fill/stroke**——描边型(lucide)和填充型
-(simple-icons)的语义都在 body 里,写死外壳会把描边图标渲染成色块。
+每个模块一个 `Icon` 外壳 + 逐图标导出。外壳本身**不写死 fill/stroke**——
+描边型(lucide)和填充型(simple-icons)语义不同,写死会把描边图标渲染成色块。
+每个图标把**自己的** presentation 属性作为根属性传给外壳。
+
+**根属性契约**(`src/svg-attrs.ts`):etch 时把 `fill`/`stroke`/`stroke-width`/
+`linecap`/`linejoin` 从 body 提升到根 `<svg>`——解包只带这些属性的单个 `<g>`、
+提升所有可绘制元素一致声明的值、删除与继承值相同的子元素属性、删掉
+`stroke="none" fill="none"` 的不可见占位框;不同的值是必要信息,保留。
+洞察:子元素上的 presentation 属性会挡住继承,`<svg>` 上的 CSS(hover 时
+`stroke-width: 2`)就静默失效;根属性又是最低优先级,CSS 与 props 都能覆盖。
+只提升 body 里已有的属性,填充型图标不会被描边属性污染。组件契约统一为
+`size` + `strokeWidth`(默认取图标集原值)+ `class`/`className`,与 Lucide 风格一致。
 
 ```tsx
 // react 模板示意
@@ -254,7 +263,13 @@ const Icon = ({ size = '1em', ...props }: IconProps & { viewBox: string }) => (
 
 // lucide/github · ISC
 export const IconGithub = (props: IconProps) => (
-	<Icon viewBox="0 0 24 24" {...props}>
+	<Icon
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="2"
+		{...props}
+	>
 		<path d="..." />
 	</Icon>
 )
@@ -273,7 +288,8 @@ body 是原生 SVG,React JSX 需要属性改名。规则是通用的,不维护�
 
 ### Solid
 
-Solid JSX 接受原生 SVG 属性名,body 原样内联;`size` 用 `splitProps` 拆出。
+Solid JSX 接受原生 SVG 属性名,body 原样内联;`size`/`strokeWidth` 用 `omit` 拆出,
+`strokeWidth` 映射到 `stroke-width`。SSR + hydration 已在 Solid 2 rc.10 下验证。
 
 ### Octane(`jsx: 'octane'`)
 
@@ -298,6 +314,18 @@ renderer 身份,避免把“编译器能解析”误当成完整的类型与运�
 ### svg(无 `jsx`)
 
 逐图标输出完整 `.svg` 文件(`iconToHTML` 包装),文件头带 license 注释。
+
+## 语义预设(`sigil preset`)
+
+预设 = 一组语义槽位 + 每个库的选图表(`src/preset/<name>.ts`)。每个槽位写成
+`{ name, as: PascalCase(slot) }`,组件名就是 `Icon<Slot>`;再次对别的库执行时,
+同组件名的旧条目(无论哪个库)被替换——换库是一条命令,import 零改动。
+库里缺字形的槽位写完整 `set/name` 借别的库(与上游预设的回退一致)。
+先按 effective 名(含 set.variant)校验全部存在,再写 manifest,原子失败。
+
+`ff` 来自 Fluid Functionalism@5ca7142 的 `icon-context.tsx` 槽位与
+`lib/docs/icon-map.tsx` 选图。`untitled-ui` 免费集许可禁止再分发与衍生图标库
+(npm 元数据写 MIT,LICENSE 正文相反),license 注释带进生成物。
 
 ## CLI(argc)
 

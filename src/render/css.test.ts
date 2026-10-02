@@ -11,6 +11,7 @@ const icons: NamedIcon[] = [
 		viewBox: '0 0 24 24',
 		license: { spdx: 'ISC' },
 		componentName: 'IconHouse',
+		attrs: {},
 		fileName: 'house',
 		cssMode: 'mask',
 	},
@@ -20,6 +21,7 @@ const icons: NamedIcon[] = [
 		viewBox: '0 0 32 32',
 		license: { title: 'MIT' },
 		componentName: 'IconBrand',
+		attrs: {},
 		fileName: 'brand',
 		cssMode: 'image',
 	},
@@ -48,6 +50,15 @@ describe('css renderer', () => {
 		expect(file?.content).toContain('mask-mode: alpha')
 		expect(file?.content).toContain('%20opacity%3D%22.5%22')
 		expect(file?.content).not.toContain('http://www.w3.org/2000/svg"')
+	})
+
+	test('stroke icons keep their root attributes inside the data URL', () => {
+		const [file] = cssRenderer.render([
+			{ ...icons[0]!, attrs: { fill: 'none', stroke: 'currentColor' } },
+		])
+		expect(file?.content).toContain(
+			encodeURIComponent(' fill="none" stroke="currentColor">'),
+		)
 	})
 
 	test('uses an authored-color background image for multicolor icons', () => {

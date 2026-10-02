@@ -2,7 +2,7 @@ import type { Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
 import { toJsxBody } from './jsx.ts'
-import { licenseTag } from './types.ts'
+import { licenseTag, rootAttrs } from './types.ts'
 
 import atlasCss from './atlas.css' with { type: 'text' }
 
@@ -12,6 +12,7 @@ import type { Octane } from 'octane/jsx-runtime'
 
 export type IconProps = Octane.JSX.IntrinsicElements['svg'] & {
 \tsize?: number | string
+\tstrokeWidth?: number | string
 }
 `
 
@@ -175,7 +176,7 @@ export const octaneRenderer: Renderer = {
 				`// ${formatRef(icon.ref)}${licenseTag(icon)}\n` +
 				`export function ${icon.componentName}(props: IconProps) @{\n` +
 				`\tconst { size = '1em', ...svgProps } = props\n` +
-				`\t<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="${icon.viewBox}" {...svgProps}>${toJsxBody(icon.body)}</svg>\n` +
+				`\t<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="${icon.viewBox}"${rootAttrs(icon, true)} {...svgProps}>${toJsxBody(icon.body)}</svg>\n` +
 				`}`,
 		)
 		const files = [

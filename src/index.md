@@ -93,6 +93,36 @@ When swapping libraries, replace the ref and pin the old name with `as`
 (`{ "name": "home", "as": "House" }` under `tabler` still yields `IconHouse`),
 so imports never change.
 
+### Root presentation contract
+
+Etch hoists `fill`/`stroke`/`stroke-width`/`stroke-linecap`/`stroke-linejoin`
+from the body to the root `<svg>`; children only inherit, and per-element
+values that differ (necessary information) stay. CSS on the `<svg>`
+(`svg { stroke-width: 2 }`, a hover class) therefore overrides line width, and
+fill-based sets get only their own `fill`. Components accept `size`,
+`strokeWidth` (defaults to the set's value) and `class`/`className`.
+
+### Semantic slot presets
+
+`sigil preset` fills named slots from one library; each slot becomes
+`Icon<Slot>` through `as`. Re-running it with another set replaces those
+slots in place, so swapping libraries never touches imports:
+
+```bash
+sigil preset '{}'                                   # list presets, sets, slots
+sigil preset "{ name: 'ff', set: 'lucide' }"
+sigil preset "{ name: 'ff', set: 'tabler' }"        # swap all 59 slots
+sigil preset "{ name: 'ff', set: 'ph', slots: ['search'] }"
+```
+
+`ff` is Fluid Functionalism's slot set (`chevron-right`, `search`,
+`more-horizontal`, …) across `lucide`, `tabler`, `ph`, `hugeicons`, and
+`untitled-ui`. Slots a library lacks borrow a Lucide glyph, as FF does.
+
+`untitled-ui` is not open source: its license allows use in your own products
+but forbids redistribution and derivative icon libraries. Do not etch it into a
+published package or UI kit.
+
 Use a bare set ref to remove an entire library and a full `set/name` ref to
 remove one icon:
 

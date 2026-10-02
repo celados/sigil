@@ -82,7 +82,7 @@ bun add github:celados/sigil   # then `bunx sigil ...`
   zero import churn; pin a renamed icon with `as` (`tabler/home` as `House`).
 
 Run `sigil sources` to see the supported sources. Bundled adapters are
-`heroicons`, `lucide`, `ph`, `simple-icons`, `svgl`, and `tabler`; any other set
+`heroicons`, `lucide`, `ph`, `simple-icons`, `svgl`, `tabler`, and `untitled-ui`; any other set
 falls back to the Iconify API with identical naming, so refs stay portable.
 `sigil use '{}'` prints the same source list for quick discovery.
 
@@ -113,6 +113,22 @@ Grouped by set; `variant` and `cssMode` are set-level design decisions:
 Bundled adapters declare a safe CSS default (`mask` for monochrome sets,
 `image` for `svgl`). Long-tail or private sets require an explicit `cssMode`
 when Sigil cannot infer their color model without guessing.
+
+Generated components put fill/stroke semantics on the root `<svg>` and accept
+`size`, `strokeWidth`, and `class`/`className`, so CSS such as
+`svg { stroke-width: 2 }` on hover really changes the line width.
+
+## Semantic presets
+
+```sh
+sigil preset "{ name: 'ff', set: 'lucide' }"   # IconChevronRight, IconSearch, …
+sigil preset "{ name: 'ff', set: 'tabler' }"   # same names, Tabler glyphs
+```
+
+`ff` mirrors [Fluid Functionalism](https://github.com/mickadesign/fluid-functionalism)'s
+59 icon slots for `lucide`, `tabler`, `ph`, `hugeicons`, and `untitled-ui`.
+Untitled UI's free set forbids redistribution: fine inside your app, not inside
+a published library.
 
 See [docs/design.md](./docs/design.md) for the full design.
 

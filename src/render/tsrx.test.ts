@@ -11,10 +11,20 @@ const icon: NamedIcon = {
 	viewBox: '0 0 24 24',
 	license: { spdx: 'ISC' },
 	componentName: 'IconHouse',
+	attrs: {},
 	fileName: 'house',
 }
 
 describe('tsrxRenderer', () => {
+	test('stroke-width defaults to the set value and yields to strokeWidth', () => {
+		const [out] = tsrxRenderer.render([
+			{ ...icon, attrs: { stroke: 'currentColor', 'stroke-width': '2' } },
+		])
+		expect(out!.content).toContain(
+			`stroke="currentColor" {...props} stroke-width={strokeWidth ?? props['stroke-width'] ?? '2'}>`,
+		)
+	})
+
 	const [file] = tsrxRenderer.render([icon])
 
 	test('emits a single .tsrx module', () => {
@@ -24,7 +34,7 @@ describe('tsrxRenderer', () => {
 
 	test('component uses the @{ } code-block body with a default-valued lazy prop', () => {
 		expect(file!.content).toContain(
-			"export function IconHouse(&{ size = '1em', ...props }: IconProps) @{",
+			"export function IconHouse(&{ size = '1em', strokeWidth, ...props }: IconProps) @{",
 		)
 		// @{ } body emits the markup as the trailing output node — no return.
 		expect(file!.content).not.toContain('return (')
@@ -38,13 +48,13 @@ describe('tsrxRenderer', () => {
 	test('native SVG attributes are kept as-is (Ripple convention)', () => {
 		// must NOT be React-style camelCase
 		expect(file!.content).toContain('stroke-width="2"')
-		expect(file!.content).not.toContain('strokeWidth')
+		expect(file!.content).not.toContain('strokeWidth="')
 		expect(file!.content).not.toContain('className')
 	})
 
-	test('header types IconProps off Ripple’s svg intrinsic attrs plus size', () => {
+	test('header types IconProps off Ripple’s svg intrinsic attrs plus size/strokeWidth', () => {
 		expect(file!.content).toContain(
-			"export type IconProps = JSX.IntrinsicElements['svg'] & { size?: number | string }",
+			"export type IconProps = JSX.IntrinsicElements['svg'] & {\n\tsize?: number | string\n\tstrokeWidth?: number | string\n}",
 		)
 		// no loose escape hatch
 		expect(file!.content).not.toContain('[attr: string]: unknown')

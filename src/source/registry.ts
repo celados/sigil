@@ -9,6 +9,7 @@ import { createPhSource } from './ph.ts'
 import { createSimpleIconsSource } from './simple-icons.ts'
 import { createSvglSource } from './svgl.ts'
 import { createTablerSource } from './tabler.ts'
+import { createUntitledUiSource } from './untitled-ui.ts'
 
 /**
  * Set → 专属 adapter 工厂。专属 adapter 在 add 时把上游 vendor 到全局 cache (<XDG
@@ -22,6 +23,7 @@ const factories: Record<string, (dir: string) => IconSource> = {
 	'simple-icons': createSimpleIconsSource,
 	svgl: createSvglSource,
 	tabler: createTablerSource,
+	'untitled-ui': createUntitledUiSource,
 }
 
 export const bundledSourceSets = Object.keys(factories).sort()

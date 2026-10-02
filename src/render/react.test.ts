@@ -9,8 +9,23 @@ const icon: NamedIcon = {
 	body: '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3" /></g>',
 	viewBox: '0 0 24 24',
 	componentName: 'IconHouse',
+	attrs: {},
 	fileName: 'house',
 }
+
+describe('reactRenderer', () => {
+	test('stroke semantics are camelCase root props before the props spread', () => {
+		const [file] = reactRenderer.render([
+			{
+				...icon,
+				attrs: { fill: 'none', stroke: 'currentColor', 'stroke-width': '2' },
+			},
+		])
+		expect(file!.content).toContain(
+			'<Icon viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>',
+		)
+	})
+})
 
 describe('reactRenderer atlas', () => {
 	test('does not emit the atlas by default', () => {

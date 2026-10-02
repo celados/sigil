@@ -18,12 +18,14 @@ import {
 	loadManifest,
 	saveManifest,
 } from './manifest.ts'
-import { formatRef, kebabCase, parseRef } from './ref.ts'
+import { FF_SETS, FF_SLOTS, ffRef, type FfSlot } from './preset/ff.ts'
+import { formatRef, kebabCase, parseRef, pascalCase } from './ref.ts'
 import { renderers } from './render/registry.ts'
 import { resolveRefs } from './resolve.ts'
 import { app, runtimeContext } from './schema.ts'
 import { iconifySource } from './source/iconify.ts'
 import { bundledSourceSets, sourceFor } from './source/registry.ts'
+import { hoistPresentation } from './svg-attrs.ts'
 
 type DomainCode =
 	| 'alias_requires_single_ref'
@@ -35,6 +37,7 @@ type DomainCode =
 	| 'invalid_set'
 	| 'manifest_empty'
 	| 'manifest_missing'
+	| 'preset_invalid'
 	| 'missing_upstream'
 	| 'render_failed'
 	| 'set_options_require_single_set'
@@ -105,8 +108,11 @@ async function resolveManifest(
 	const byRef = new Map(icons.map((icon) => [formatRef(icon.ref), icon]))
 	return entries.map((entry, i) => {
 		const resolved = byRef.get(formatRef(refs[i]!))!
+		const { body, attrs } = hoistPresentation(resolved.body)
 		return {
 			...resolved,
+			body,
+			attrs,
 			componentName: componentName(entry),
 			// 文件名/CSS class 不带前缀:`house.svg`、`.sigil-house`
 			fileName: kebabCase(iconName(entry)),
@@ -331,6 +337,104 @@ await app.run({
 				}),
 				skipped,
 				autoUsed,
+			}
+		},
+
+		preset: async ({ input, context }) => {
+			const presets = {
+				ff: {
+					title: 'Fluid Functionalism icon slots',
+					source:
+						'https://github.com/mickadesign/fluid-functionalism/blob/5ca7142/registry/default/lib/icon-context.tsx',
+					sets: FF_SETS,
+					slots: [...FF_SLOTS],
+				},
+			}
+			if (!input.name) {
+				if (input.set || input.slots) {
+					fail('preset_invalid', 'set and slots require a preset name')
+				}
+				return { presets }
+			}
+			const set = input.set ?? fail('preset_invalid', 'set is required')
+			if (!FF_SETS.includes(set)) {
+				fail(
+					'preset_invalid',
+					`preset "ff" covers ${FF_SETS.join(', ')} — not "${set}"`,
+				)
+			}
+			const unknown = (input.slots ?? []).filter(
+				(slot) => !(FF_SLOTS as readonly string[]).includes(slot),
+			)
+			if (unknown.length > 0) {
+				fail('preset_invalid', `unknown ff slots: ${unknown.join(', ')}`)
+			}
+			const slots = (input.slots ?? FF_SLOTS) as readonly FfSlot[]
+
+			const runtime = runtimeContext(context)
+			const manifest = loadManifest(runtime.manifestPath) ?? defaultManifest()
+			const planned = slots.map((slot) => {
+				const ref = parseRef(ffRef(set, slot))
+				const as = pascalCase(slot)
+				const entry: FlatEntry =
+					pascalCase(ref.name) === as
+						? { set: ref.set, name: ref.name }
+						: { set: ref.set, name: ref.name, as }
+				return { slot, ref, entry }
+			})
+
+			// 先校验再写:effective 名含 set.variant(ph 的 light 等)
+			const { missing } = await attempt(
+				resolveRefs(
+					planned.map((p) =>
+						effectiveRef(manifest, p.entry, runtime.vendorRoot),
+					),
+					runtime.vendorRoot,
+				),
+			)
+			if (missing.length > 0) {
+				fail(
+					'icon_not_found',
+					`not found: ${[...new Set(missing.map(formatRef))].join(', ')}`,
+				)
+			}
+
+			// 槽位即组件名:同名的旧条目(无论哪个库)被替换,这就是换库
+			const targets = new Set(planned.map((p) => componentName(p.entry)))
+			const replaced: string[] = []
+			for (const [owner, config] of Object.entries(manifest)) {
+				config.icons = config.icons.filter((icon) => {
+					const flat: FlatEntry =
+						typeof icon === 'string'
+							? { set: owner, name: icon }
+							: { set: owner, name: icon.name, as: icon.as }
+					if (!targets.has(componentName(flat))) return true
+					replaced.push(`${owner}/${flat.name}`)
+					return false
+				})
+			}
+			for (const { entry } of planned) {
+				const config = (manifest[entry.set] ??= { icons: [] })
+				config.icons.push(
+					entry.as ? { name: entry.name, as: entry.as } : entry.name,
+				)
+			}
+			try {
+				assertNoCollisions(flatten(manifest))
+			} catch (e) {
+				fail('component_collision', (e as Error).message)
+			}
+			saveManifest(runtime.manifestPath, manifest)
+
+			return {
+				preset: input.name,
+				set,
+				applied: planned.map((p) => ({
+					slot: p.slot,
+					ref: formatRef(p.ref),
+					component: componentName(p.entry),
+				})),
+				replaced: replaced.length,
 			}
 		},
 

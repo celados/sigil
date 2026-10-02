@@ -16,6 +16,7 @@ export const svgRenderer: Renderer = {
 				viewBox: icon.viewBox,
 				width: w!,
 				height: h!,
+				...icon.attrs,
 			})
 			return {
 				path: `${icon.fileName}.svg`,

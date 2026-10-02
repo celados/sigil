@@ -10,6 +10,7 @@ const icon: NamedIcon = {
 	viewBox: '0 0 24 24',
 	license: { spdx: 'ISC' },
 	componentName: 'IconHouse',
+	attrs: {},
 	fileName: 'house',
 }
 

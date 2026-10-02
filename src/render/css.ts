@@ -1,7 +1,7 @@
 import type { NamedIcon, Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
-import { licenseTag } from './types.ts'
+import { licenseTag, rootAttrs } from './types.ts'
 
 const BASE_RULE = `.sigil {
 	display: inline-block;
@@ -14,7 +14,7 @@ const BASE_RULE = `.sigil {
 function dataUrlFor(icon: NamedIcon): string {
 	// Some upstream icon bodies still reference gradients through xlink. A standalone
 	// data URL must declare that namespace because it cannot inherit one from the page.
-	const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${icon.viewBox}">${icon.body}</svg>`
+	const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${icon.viewBox}"${rootAttrs(icon)}>${icon.body}</svg>`
 	return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
