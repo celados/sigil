@@ -78,8 +78,9 @@ hand-edited.
   because their JSX types and atlas state APIs differ.
 - Code-split apps (several routes or lazy chunks) should etch `react` or `solid`
   with `modules: true`: `output` is then a directory holding `index.ts` (a
-  side-effect-free barrel; import from it as before), `_shell.tsx` and one
-  module per icon. A bundler keeps a single-file `icons.tsx` whole in one chunk,
+  side-effect-free barrel; import from it as before), `_shell.tsx`, one
+  module per icon and a `package.json` with `sideEffects: false` (without it
+  a bundler keeps every icon in each chunk that imports the barrel). A bundler keeps a single-file `icons.tsx` whole in one chunk,
   so every icon used anywhere ships with the first page that imports any;
   per-icon modules let each icon land in the chunk that uses it. Re-etching
   removes stale generated files. `modules` cannot combine with `atlas`.

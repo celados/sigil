@@ -2,7 +2,13 @@ import type { Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
 import { toJsxBody } from './jsx.ts'
-import { licenseTag, renderBarrel, rootAttrs, SHELL_FILE } from './types.ts'
+import {
+	licenseTag,
+	PACKAGE_FILE,
+	renderBarrel,
+	rootAttrs,
+	SHELL_FILE,
+} from './types.ts'
 
 import atlasCss from './atlas.css' with { type: 'text' }
 
@@ -214,6 +220,6 @@ export const reactRenderer: Renderer = {
 				`\t<Icon viewBox="${icon.viewBox}"${rootAttrs(icon, true)} {...props}>${toJsxBody(icon.body)}</Icon>\n` +
 				`)\n`,
 		}))
-		return [shell, ...modules, renderBarrel(icons, '.ts')]
+		return [PACKAGE_FILE, shell, ...modules, renderBarrel(icons, '.ts')]
 	},
 }

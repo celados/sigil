@@ -30,7 +30,7 @@ component.
 
 `modules: true` (`react` and `solid`) emits a directory instead of one file:
 `index.ts` (a barrel of pure re-exports), `_shell.tsx` (shared `Icon` wrapper
-and `IconProps`) and one `<icon>.tsx` per icon. A bundler keeps a single
+and `IconProps`) one `<icon>.tsx` per icon and a `package.json` (`sideEffects: false`, scoped to the directory so a bundler does not keep every re-exported icon in each chunk that imports the barrel). A bundler keeps a single
 `icons.tsx` whole in one chunk, so every icon used anywhere in an app lands in
 the first page's chunk; per-icon modules let each icon ship with the chunk that
 uses it. Imports from the directory are unchanged (`import { IconHouse } from

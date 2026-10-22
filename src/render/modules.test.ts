@@ -40,8 +40,13 @@ describe.each([
 			'house.tsx',
 			'index.ts',
 			'menu.tsx',
+			'package.json',
 			'shell.tsx',
 		])
+	})
+
+	test('a package.json scopes sideEffects: false to the directory', () => {
+		expect(JSON.parse(files['package.json']!)).toEqual({ sideEffects: false })
 	})
 
 	test('the shell file cannot collide with an icon named "shell"', () => {
