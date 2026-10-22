@@ -60,6 +60,7 @@ hand-edited.
    sigil etch "{ output: 'src/components', jsx: 'solid' }"
    sigil etch "{ output: 'src/components', jsx: 'octane', atlas: true }"
    sigil etch "{ output: 'src/components', jsx: 'tsrx' }"
+   sigil etch "{ output: 'src/components/icons', jsx: 'react', modules: true }"
    ```
 
 6. Verify concrete setup with `sigil list '{}'` and check that the generated
@@ -75,6 +76,13 @@ hand-edited.
 - Framework renderers suit built applications. `react` and `solid` emit `.tsx`;
   `octane` and Ripple `tsrx` both emit `.tsrx`, but they are not interchangeable
   because their JSX types and atlas state APIs differ.
+- Code-split apps (several routes or lazy chunks) should etch `react` or `solid`
+  with `modules: true`: `output` is then a directory holding `index.ts` (a
+  side-effect-free barrel; import from it as before), `_shell.tsx` and one
+  module per icon. A bundler keeps a single-file `icons.tsx` whole in one chunk,
+  so every icon used anywhere ships with the first page that imports any;
+  per-icon modules let each icon land in the chunk that uses it. Re-etching
+  removes stale generated files. `modules` cannot combine with `atlas`.
 
 Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`.
 For a long-tail or private source, set `cssMode` explicitly with `use` or in
@@ -140,5 +148,7 @@ sigil remove "{ refs: ['svgl'] }"
 - `invalid_ref`: use one canonical `set/name` string per array element.
 - `atlas_requires_component_renderer`: set `jsx` to `react`, `solid`, `octane`,
   or `tsrx` when `atlas` is true.
+- `modules_unsupported` / `modules_atlas` / `modules_output_is_directory`:
+  `modules` needs `jsx` `react` or `solid`, no `atlas`, and a directory output.
 - `conflicting_renderers`: choose either `format: 'css'` or a `jsx` renderer,
   never both.

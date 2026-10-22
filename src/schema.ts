@@ -145,13 +145,14 @@ export const schema = {
 	etch: c
 		.meta({
 			description:
-				'Generate icon files from the manifest. Without format or jsx dumps one .svg per icon; format css emits a stylesheet, while jsx emits a component module.',
+				'Generate icon files from the manifest. Without format or jsx dumps one .svg per icon; format css emits a stylesheet, while jsx emits a component module. With jsx react or solid, modules: true emits a directory instead: one module per icon, a shared _shell module and a side-effect-free index barrel, so a bundler puts each icon in the chunk that uses it (default for code-split apps).',
 			examples: [
 				'sigil etch "{ output: \'public/svg\' }"',
 				"sigil etch \"{ output: 'public/icons.css', format: 'css' }\"",
 				"sigil etch \"{ output: 'src/components/icons.tsx', jsx: 'react' }\"",
 				"sigil etch \"{ output: 'src/components', jsx: 'solid' }\"",
 				"sigil etch \"{ output: 'src/components', jsx: 'octane', atlas: true }\"",
+				"sigil etch \"{ output: 'src/components/icons', jsx: 'react', modules: true }\"",
 			],
 		})
 		.input(
@@ -161,6 +162,7 @@ export const schema = {
 					format: v.optional(v.picklist(['css'])),
 					jsx: v.optional(v.picklist(['react', 'solid', 'octane', 'tsrx'])),
 					atlas: v.optional(v.boolean(), false),
+					modules: v.optional(v.boolean(), false),
 				}),
 			),
 		),
