@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+### Fixed
+
+- `modules: true` also writes `package.json` with `sideEffects: false` into the
+  output directory. Without it rolldown kept every re-exported icon in each
+  chunk importing the barrel, so all icons still landed in one shared chunk.
+
 ## 0.6.0
 
 ### Added
