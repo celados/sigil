@@ -11,6 +11,7 @@ sigil search "{ query: 'github', set: '*' }"   # global discovery via Iconify
 sigil add "{ refs: ['lucide/house', 'lucide/menu', 'svgl/github'] }"
 sigil etch "{ output: 'public/icons.css', format: 'css' }"  # standalone HTML / file://
 sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"      # component module
+sigil etch "{ output: 'src/icons', jsx: 'react', modules: true }"  # one module per icon + barrel
 sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"  # .tsrx + atlas
 sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
@@ -26,6 +27,15 @@ they remain explicit targets. Without `jsx`, etch dumps one `.svg` file per
 icon. Add `atlas: true` with any `jsx` target to generate a sidecar preview module
 (`icons.atlas.tsx` or `icons.atlas.tsrx`) that exports a searchable `IconAtlas`
 component.
+
+`modules: true` (`react` and `solid`) emits a directory instead of one file:
+`index.ts` (a barrel of pure re-exports), `_shell.tsx` (shared `Icon` wrapper
+and `IconProps`) and one `<icon>.tsx` per icon. A bundler keeps a single
+`icons.tsx` whole in one chunk, so every icon used anywhere in an app lands in
+the first page's chunk; per-icon modules let each icon ship with the chunk that
+uses it. Imports from the directory are unchanged (`import { IconHouse } from
+'./icons'`), and re-etching deletes generated files for icons no longer in the
+manifest.
 
 `format: 'css'` emits one self-contained stylesheet for standalone HTML,
 including documents opened directly through `file://`:

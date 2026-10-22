@@ -26,10 +26,14 @@ import { app, runtimeContext } from './schema.ts'
 import { iconifySource } from './source/iconify.ts'
 import { bundledSourceSets, sourceFor } from './source/registry.ts'
 import { hoistPresentation } from './svg-attrs.ts'
+import { writeModules } from './write-modules.ts'
 
 type DomainCode =
 	| 'alias_requires_single_ref'
 	| 'atlas_requires_component_renderer'
+	| 'modules_unsupported'
+	| 'modules_atlas'
+	| 'modules_output_is_directory'
 	| 'component_collision'
 	| 'conflicting_renderers'
 	| 'icon_not_found'
@@ -522,6 +526,33 @@ await app.run({
 			}
 			const named = await resolveManifest(manifest, runtime.vendorRoot)
 			const renderer = renderers[input.format ?? input.jsx ?? 'svg']!
+
+			if (input.modules) {
+				if (!renderer.renderModules) {
+					fail('modules_unsupported', 'modules requires jsx react or solid')
+				}
+				if (input.atlas) {
+					fail('modules_atlas', 'modules and atlas cannot be combined')
+				}
+				if (/\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)) {
+					fail(
+						'modules_output_is_directory',
+						'with modules, output is a directory (it receives index.ts, _shell and one file per icon)',
+					)
+				}
+				let files
+				try {
+					files = renderer.renderModules(named)
+				} catch (e) {
+					fail('render_failed', (e as Error).message)
+				}
+				writeModules(input.output, files)
+				return {
+					icons: named.length,
+					output: input.output,
+					files: files.map((file) => join(input.output, file.path)),
+				}
+			}
 
 			if (renderer.defaultFile) {
 				// CSS 与组件模块各自只认自己的文件后缀，避免把带点号的目录误判成文件。

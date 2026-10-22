@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0
+
+### Added
+
+- `etch` `modules: true` for `jsx` `react` and `solid`: one module per icon, a
+  shared `_shell` module and a side-effect-free `index.ts` barrel in an output
+  directory, so bundlers place each icon in the chunk that uses it instead of
+  shipping every icon with the first page. Stale generated files are removed on
+  re-etch.
+
 ## 0.5.0
 
 ### Breaking
