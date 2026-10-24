@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0
+
+### Added
+
+- `jsx: 'pencil'` etch target: icons as `@celados/pencil` Path nodes for
+  pen.dev designs written as TSX, sharing the app's `icons.json` and component
+  names. Shapes become path data, `currentColor` binds to a `color` prop, and
+  `strokeWidth` keeps the icon's own units. Paint Pen cannot draw fails the
+  etch with the reason.
+
+### Changed
+
+- Generated Solid and pencil modules are typechecked in tests against
+  `solid-js`/`@solidjs/web` 2.x and `@celados/pencil` (dev dependencies).
+
 ## 0.6.1
 
 ### Fixed

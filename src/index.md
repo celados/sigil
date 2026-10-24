@@ -61,6 +61,7 @@ hand-edited.
    sigil etch "{ output: 'src/components', jsx: 'octane', atlas: true }"
    sigil etch "{ output: 'src/components', jsx: 'tsrx' }"
    sigil etch "{ output: 'src/components/icons', jsx: 'react', modules: true }"
+   sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"
    ```
 
 6. Verify concrete setup with `sigil list '{}'` and check that the generated
@@ -84,6 +85,11 @@ hand-edited.
   so every icon used anywhere ships with the first page that imports any;
   per-icon modules let each icon land in the chunk that uses it. Re-etching
   removes stale generated files. `modules` cannot combine with `atlas`.
+- `pencil` emits `@celados/pencil` Path nodes for a pen.dev design folder next
+  to the app: run it against the app's own `icons.json` so designs and code use
+  the same icons and component names (`IconHouse size={16} color="#111827"`).
+  Icons Pen cannot draw (gradients, transforms, masks) fail the etch with the
+  reason. No atlas.
 
 Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`.
 For a long-tail or private source, set `cssMode` explicitly with `use` or in

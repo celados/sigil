@@ -20,6 +20,7 @@ sigil etch "{ output: 'src/icons.tsx', jsx: 'react' }"
 sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
+sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"  # pencil 设计稿
 sigil etch "{ output: 'public/svg' }"       # 无 jsx → dump 独立 .svg 文件
 ```
 
@@ -289,7 +290,9 @@ body 是原生 SVG,React JSX 需要属性改名。规则是通用的,不维护�
 ### Solid
 
 Solid JSX 接受原生 SVG 属性名,body 原样内联;`size`/`strokeWidth` 用 `omit` 拆出,
-`strokeWidth` 映射到 `stroke-width`。SSR + hydration 已在 Solid 2 rc.10 下验证。
+`strokeWidth` 映射到 `stroke-width`。SSR + hydration 已在 Solid 2 rc.10 下验证;
+`solid-js`/`@solidjs/web` 2.x 是 devDependency,`typecheck.test.ts` 用它们对生成物
+跑 `tsc`。
 
 ### Octane(`jsx: 'octane'`)
 
@@ -310,6 +313,22 @@ camelCase JSX 属性的转换。组件使用 `@{}` 模板体;atlas 使用 Octane
 Octane 与 Ripple 共享 TSRX 语法族,基础组件形状接近,但不是同一个生成目标:
 JSX 类型入口、SVG 属性合同和 atlas 状态 API 都不同。共享转换 helper,不合并
 renderer 身份,避免把“编译器能解析”误当成完整的类型与运行时兼容。
+
+### pencil(`jsx: 'pencil'`)
+
+给 [pencil](https://github.com/celados/pencil)(pen.dev 场景图写成 TSX)的
+design 目录用,让设计稿与 app 共享同一份 `icons.json` 和组件名。Pen 没有 SVG
+节点,所以每个 shape 转成 path data(circle/rect/line/poly\* → `d`,开头的 `m`
+改写成绝对 `M`,否则拼接后变相对),paint 原样保留、`currentColor` 绑定到
+`color` prop。只描边且 paint 相同的 shape 合并成一个 `Path`(无损);填充、
+paint 不同或带 `opacity` 时每个 shape 一个 `Path`,包在 `layout="none"` 的
+`Frame` 里保持绘制顺序——合并填充会让 nonzero 环绕在重叠处挖洞。
+
+Pen 的描边宽度是节点像素,`strokeWidth` prop 仍按图标自身单位(与 app 的
+`<svg stroke-width>` 同义),生成代码按 `size / viewBox 宽` 换算。渐变、
+`transform`、`mask` 等 Pen 画不了的内容让 etch 以 `render_failed` 失败并写明
+原因。已与 Pen headless 导出逐像素对照(lucide/ph duotone/tabler/heroicons/
+untitled-ui/simple-icons)。不支持 atlas。
 
 ### svg(无 `jsx`)
 
