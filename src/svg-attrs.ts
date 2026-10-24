@@ -24,7 +24,7 @@ export const PRESENTATION_ATTRS = [
 ] as const
 
 const HOISTABLE = new Set<string>(PRESENTATION_ATTRS)
-const SHAPES = new Set([
+export const SHAPES = new Set([
 	'path',
 	'circle',
 	'ellipse',
@@ -34,16 +34,16 @@ const SHAPES = new Set([
 	'rect',
 ])
 
-type Attr = [name: string, value: string]
-type Element = { tag: string; attrs: Attr[]; children: Node[] }
-type Node = Element | string
+export type Attr = [name: string, value: string]
+export type Element = { tag: string; attrs: Attr[]; children: Node[] }
+export type Node = Element | string
 
 const TOKEN =
 	/<!--[\s\S]*?-->|<\/([\w:-]+)\s*>|<([\w:-]+)((?:\s+[\w:-]+="[^"]*")*)\s*(\/?)>|[^<]+/g
 const ATTR = /([\w:-]+)="([^"]*)"/g
 
 /** Iconify 归一化后的 body 只有双引号属性,无需完整 XML 解析器 */
-function parse(body: string): Node[] {
+export function parse(body: string): Node[] {
 	const root: Element = { tag: '#root', attrs: [], children: [] }
 	const stack = [root]
 	for (const m of body.matchAll(TOKEN)) {

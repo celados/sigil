@@ -16,6 +16,7 @@ sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"  # .tsrx + atlas
 sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'tsrx' }"  # Ripple TSRX
+sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"  # pen.dev design
 sigil etch "{ output: 'public/svg' }"               # one .svg per icon
 ```
 
@@ -23,7 +24,9 @@ sigil etch "{ output: 'public/svg' }"               # one .svg per icon
 ([Octane](https://github.com/octanejs/octane)), and `tsrx`
 ([Ripple](https://tsrx.dev)). Octane and Ripple both emit `.tsrx`, but use
 different framework types, SVG attribute conventions, and atlas state APIs, so
-they remain explicit targets. Without `jsx`, etch dumps one `.svg` file per
+they remain explicit targets. `pencil` emits
+[pencil](https://github.com/celados/pencil) Path nodes, so a pen.dev design
+written as TSX shares the app's `icons.json`. Without `jsx`, etch dumps one `.svg` file per
 icon. Add `atlas: true` with any `jsx` target to generate a sidecar preview module
 (`icons.atlas.tsx` or `icons.atlas.tsrx`) that exports a searchable `IconAtlas`
 component.

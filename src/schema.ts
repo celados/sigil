@@ -153,6 +153,7 @@ export const schema = {
 				"sigil etch \"{ output: 'src/components', jsx: 'solid' }\"",
 				"sigil etch \"{ output: 'src/components', jsx: 'octane', atlas: true }\"",
 				"sigil etch \"{ output: 'src/components/icons', jsx: 'react', modules: true }\"",
+				"sigil etch \"{ output: 'design/icons.tsx', jsx: 'pencil' }\"",
 			],
 		})
 		.input(
@@ -160,7 +161,14 @@ export const schema = {
 				v.object({
 					output: v.string(),
 					format: v.optional(v.picklist(['css'])),
-					jsx: v.optional(v.picklist(['react', 'solid', 'octane', 'tsrx'])),
+					jsx: v.optional(
+						v.pipe(
+							v.picklist(['react', 'solid', 'octane', 'tsrx', 'pencil']),
+							v.description(
+								'Component target; pencil emits @celados/pencil Path nodes for pen.dev designs',
+							),
+						),
+					),
 					atlas: v.optional(v.boolean(), false),
 					modules: v.optional(v.boolean(), false),
 				}),

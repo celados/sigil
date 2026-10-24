@@ -515,7 +515,7 @@ await app.run({
 			if (!manifest || flatten(manifest).length === 0) {
 				fail('manifest_empty', 'manifest is empty — add icons first')
 			}
-			if (input.atlas && !input.jsx) {
+			if (input.atlas && (!input.jsx || input.jsx === 'pencil')) {
 				fail(
 					'atlas_requires_component_renderer',
 					'atlas requires jsx react, solid, octane, or tsrx',
