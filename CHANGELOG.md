@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1
+
+### Changed
+
+- Upgrade `@celados/argc` to 7.12.0: `@skill`, `@schema` and bare help are
+  refused when an agent pipes stdout (`| head`, `$(…)`). Tests preload
+  `@celados/argc/test-preload`.
+
 ## 0.7.0
 
 ### Added
