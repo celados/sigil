@@ -29,7 +29,7 @@ function run(args: string[]) {
 	}
 }
 
-describe('argc v7 command surface', () => {
+describe('argc command surface', () => {
 	test('schema exposes structured add input', () => {
 		const { result } = run(['@schema', '.add'])
 

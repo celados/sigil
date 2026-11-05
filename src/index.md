@@ -12,8 +12,8 @@ hand-edited.
   complete input.
 - Icon refs are explicit `set/name` strings in arrays. There is no `+`, `,`, or
   `:` ref DSL.
-- Default output is YAML for agents. Use `sigil @run ... --json` when a script
-  needs strict JSON; progress and diagnostics belong on stderr.
+- Default output is YAML for agents. YAML is lossless: scripts call a command
+  directly (`sigil list '{}'`) and parse stdout with `Bun.YAML.parse`; progress and diagnostics belong on stderr.
 - Override the manifest with `--context "{ manifest: 'path/to/icons.json' }"`.
   The default is `icons.json` in the current directory.
 - Treat the manifest and generated files as project-owned source. Sigil only

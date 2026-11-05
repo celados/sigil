@@ -348,8 +348,8 @@ untitled-ui/simple-icons)。不支持 atlas。
 
 ## CLI(argc)
 
-用 [argc](https://github.com/ethan-huo/argc) v7 schema-first 定义,白送
-`@schema`(agent 自描述)、`@run` 脚本入口、`@skill` 内嵌使用指南和 shell
+用 [argc](https://github.com/ethan-huo/argc) v8 schema-first 定义,白送
+`@schema`(agent 自描述)、`@skill` 内嵌使用指南和 shell
 completions。
 
 ```
@@ -367,7 +367,7 @@ sigil etch "{ output, format? | jsx?, atlas? }"
 - **不设 alias 或 ref DSL**(rm/ls/-o/`a+b,c` 这类短形式):使用者是 agent,
   结构化字段比 shell 方言更稳定。
 - stdout 纪律:handler 返回结构化结果,argc 序列化为 YAML;诊断走 stderr。
-  脚本需要严格 JSON 时用 `@run --json`,命令本身不暴露 `json` flag。
+  YAML 无损,脚本直接调用命令并用 `Bun.YAML.parse` 解析 stdout;命令本身不暴露 `json` flag。
 - search 路由:`set` 命中已 vendor 的专属 adapter → 本地搜索;
   否则 iconify API 全局发现。
 
