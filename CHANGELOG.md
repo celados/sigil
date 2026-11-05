@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+
+### Changed
+
+- Upgrade `@celados/argc` to 8.0.0: `sigil @run` and `--json` are removed.
+  Output stays YAML, which is lossless; scripts call a command directly and
+  parse stdout with `Bun.YAML.parse`.
+
 ## 0.7.1
 
 ### Changed
