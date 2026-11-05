@@ -23,13 +23,15 @@ function run(args: string[]) {
 			stderr: 'pipe',
 			env: {
 				...process.env,
+				// The test reads stdout through a pipe; opt out of argc's agent-capture guard.
+				ARGC_ALLOW_CAPTURE: '1',
 				XDG_CACHE_HOME: join(cwd, 'cache'),
 			},
 		}),
 	}
 }
 
-describe('argc v7 command surface', () => {
+describe('argc command surface', () => {
 	test('schema exposes structured add input', () => {
 		const { result } = run(['@schema', '.add'])
 

@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - uses: oven-sh/setup-bun@v2.2.0
         with:
-          # argc v7 uses Bun's current JSON5 runtime API; pinning an old Bun
+          # argc uses Bun's current JSON5 and YAML runtime APIs; pinning an old Bun
           # version turns valid input parsing into a runtime compatibility gap.
           bun-version: latest
       - name: Configure Celados npm registry
