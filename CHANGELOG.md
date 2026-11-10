@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.1
+
+### Changed
+
+- Upgrade `@celados/argc` to 9.0.0: the output-capture guard is removed, so
+  piping `@skill`, `@schema` and help works again. The test preload is gone.
+
 ## 0.8.0
 
 ### Changed
