@@ -35,9 +35,7 @@ describe('argc command surface', () => {
 
 		expect(result.exitCode).toBe(0)
 		expect(result.stdout.toString()).toContain('refs: string[]')
-		expect(result.stdout.toString()).toContain(
-			"sigil add \"{ refs: ['lucide/house'",
-		)
+		expect(result.stdout.toString()).toContain('as?: string')
 	})
 
 	test('sources returns structured YAML on stdout', () => {
