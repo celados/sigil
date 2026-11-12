@@ -8,8 +8,9 @@ hand-edited.
 ## Execution Rules
 
 - Start with `sigil @schema`; do not guess command input from memory.
-- Pass one quoted object literal, `@payload.json`, or stdin as each command's
-  complete input.
+- Pass one quoted object literal, or `-` / `@payload.yaml` (YAML or JSON5, from
+  stdin or a file) as each command's complete input. Never mix an object with
+  flags.
 - Icon refs are explicit `set/name` strings in arrays. There is no `+`, `,`, or
   `:` ref DSL.
 - Default output is YAML for agents. YAML is lossless: scripts call a command
