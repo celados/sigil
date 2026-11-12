@@ -38,8 +38,7 @@ export const schema = {
 	use: c
 		.meta({
 			description:
-				'Declare icon libraries for this project and vendor them locally. Empty input lists supported sources.',
-			examples: ["sigil use \"{ sets: ['ph'], variant: 'duotone' }\""],
+				'Declare icon libraries for this project and vendor them locally. Empty input lists supported sources',
 		})
 		.input(
 			s(
@@ -54,15 +53,14 @@ export const schema = {
 	sources: c
 		.meta({
 			description:
-				'List supported icon sources. Bundled sources vendor locally; every other Iconify set is supported through the API fallback.',
+				'List supported icon sources; any other Iconify set works through the API fallback',
 		})
 		.input(s(v.object({}))),
 
 	search: c
 		.meta({
 			description:
-				'Search icons. Omit set for declared libraries, pass a set ID for one library, or pass * for global Iconify discovery.',
-			examples: ["sigil search \"{ query: 'github', set: '*' }\""],
+				"Search icons: declared libraries by default, one library by set ID, or '*' for global Iconify discovery",
 		})
 		.input(
 			s(
@@ -80,11 +78,7 @@ export const schema = {
 	add: c
 		.meta({
 			description:
-				'Add icon refs to the manifest. Vendors each icon set locally and validates existence.',
-			examples: [
-				"sigil add \"{ refs: ['lucide/house', 'lucide/menu', 'simple-icons/github'] }\"",
-				"sigil add \"{ refs: ['simple-icons/github'], as: 'GithubBrand' }\"",
-			],
+				'Add icon refs to the manifest, vendoring each set locally and validating the icon exists',
 		})
 		.input(
 			s(
@@ -98,7 +92,7 @@ export const schema = {
 	preset: c
 		.meta({
 			description:
-				'Fill a preset of semantic icon slots from one library. Each slot becomes Icon<Slot> via as; re-running with another set swaps every slot in place, so imports never change. Empty input lists presets.',
+				'Fill a preset of semantic icon slots (Icon<Slot>) from one library; re-running with another set swaps them in place. Empty input lists presets',
 			examples: [
 				"sigil preset \"{ name: 'ff', set: 'tabler', slots: ['search', 'chevron-right'] }\"",
 			],
@@ -117,8 +111,7 @@ export const schema = {
 	remove: c
 		.meta({
 			description:
-				'Remove icons from the manifest. A bare set name (no /) removes the whole library declaration.',
-			examples: ['sigil remove "{ refs: [\'svgl\'] }"'],
+				'Remove icons from the manifest. A bare set name removes the whole library',
 		})
 		.input(s(v.object({ refs: v.pipe(v.array(v.string()), v.minLength(1)) }))),
 
@@ -131,9 +124,8 @@ export const schema = {
 	etch: c
 		.meta({
 			description:
-				'Generate icon files from the manifest. Without format or jsx dumps one .svg per icon; format css emits a stylesheet, while jsx emits a component module. With jsx react or solid, modules: true emits a directory instead: one module per icon, a shared _shell module and a side-effect-free index barrel, so a bundler puts each icon in the chunk that uses it (default for code-split apps).',
+				'Generate icon files from the manifest: one .svg per icon, a CSS stylesheet (format) or component modules (jsx). Renderer semantics: sigil @skill references/outputs.md',
 			examples: [
-				"sigil etch \"{ output: 'public/icons.css', format: 'css' }\"",
 				"sigil etch \"{ output: 'src/components', jsx: 'octane', atlas: true }\"",
 				"sigil etch \"{ output: 'src/components/icons', jsx: 'react', modules: true }\"",
 			],
@@ -151,8 +143,24 @@ export const schema = {
 							),
 						),
 					),
-					atlas: v.optional(v.boolean(), false),
-					modules: v.optional(v.boolean(), false),
+					atlas: v.optional(
+						v.pipe(
+							v.boolean(),
+							v.description(
+								'Also emit a sidecar searchable IconAtlas preview component (any jsx target)',
+							),
+						),
+						false,
+					),
+					modules: v.optional(
+						v.pipe(
+							v.boolean(),
+							v.description(
+								'One module per icon plus a barrel, for code-split apps (react/solid, directory output, no atlas)',
+							),
+						),
+						false,
+					),
 				}),
 			),
 		),

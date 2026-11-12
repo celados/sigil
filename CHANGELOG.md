@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.2
+
+### Changed
+
+- `@schema`: drop examples that repeat an input's shape (`use`, `search`, `add`,
+  `remove`, the css `etch`), shorten the long `etch`/`preset` descriptions and
+  describe `atlas` and `modules` on the fields themselves.
+
 ## 0.9.0
 
 ### Changed
