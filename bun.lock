@@ -5,7 +5,7 @@
     "": {
       "name": "sigil",
       "dependencies": {
-        "@celados/argc": "9.0.0",
+        "@celados/argc": "10.0.0",
         "@iconify/utils": "^3.1.3",
         "@valibot/to-json-schema": "^1.7.1",
         "valibot": "^1.4.1",
@@ -24,7 +24,7 @@
   "packages": {
     "@antfu/install-pkg": ["@antfu/install-pkg@1.1.0", "", { "dependencies": { "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" } }, "sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ=="],
 
-    "@celados/argc": ["@celados/argc@9.0.0", "https://npm.celados.com/@celados/argc/-/@celados/argc-9.0.0.tgz", { "dependencies": { "yaml": "2.9.0" }, "peerDependencies": { "@standard-schema/spec": "^1.0.0" } }, "sha512-shfwtc+ZAyXBxtxPnG3CapcUL0c7sUJu+pbcQAe5e190lVmtyRBCG1+OCVLn9UgKvTx2g0x7fFlu9Y7jR6LPnQ=="],
+    "@celados/argc": ["@celados/argc@10.0.0", "https://npm.celados.com/@celados/argc/-/@celados/argc-10.0.0.tgz", { "dependencies": { "yaml": "^2.9.1" }, "peerDependencies": { "@standard-schema/spec": "^1.0.0", "@valibot/to-json-schema": "^1.8.0", "valibot": "^1.5.0" } }, "sha512-5PyPq2Ix8iXx9iHg+NIej2o27TqaIWg4l0vxKijoOPMckqP3YU9QwjN+8J+QVqDZsBCSfCNOhzHU0kJXE5LRrg=="],
 
     "@celados/pencil": ["@celados/pencil@0.6.1", "https://npm.celados.com/@celados/pencil/-/@celados/pencil-0.6.1.tgz", { "dependencies": { "@celados/argc": "^7.11.3", "@fontsource/inter": "^5.3.0", "@jsquash/webp": "^1.5.0", "@resvg/resvg-js": "^2.6.2", "@valibot/to-json-schema": "^1.7.0", "lucide-static": "^1.61.0", "oxc-parser": "^0.155.0", "satori": "^0.63.2", "svg-path-bbox": "^2.1.0", "valibot": "^1.4.1", "yaml": "^2.9.0" }, "bin": { "pencil": "src/main.ts" } }, "sha512-9VFt8Bze2EZTG9UxksAkdd102c7hn6fTu6NQLCkQ3ptlZsAGrvaJqaOXJYoOoWFjLY9lSaezTtjDKsNiyP0/Pg=="],
 
@@ -287,6 +287,8 @@
     "wasm-feature-detect": ["wasm-feature-detect@1.9.0", "", {}, "sha512-zonE+xlIIYtxPy++L24ow0hAD8CICb4+FgPyROd3buyXIqsJvUEDkBgfCCoXOd1Hu3DUr0GOfnPIdcGV+YpNaA=="],
 
     "yaml": ["yaml@2.9.0", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA=="],
+
+    "@celados/argc/yaml": ["yaml@2.9.1", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw=="],
 
     "@celados/pencil/@celados/argc": ["@celados/argc@7.11.3", "https://npm.celados.com/@celados/argc/-/@celados/argc-7.11.3.tgz", { "dependencies": { "oxc-parser": "0.137.0", "yaml": "2.9.0" }, "peerDependencies": { "@standard-schema/spec": "^1.0.0" } }, "sha512-ZA9mOj6VumqIymQefvnu8thSfGyTsGBLif1Wg5mE6SKI1uYNmtys2wXtPU9GKZk0kw8ioRK5Sx15Z865HaZ5mA=="],
 
