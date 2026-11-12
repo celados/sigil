@@ -1,162 +1,43 @@
 # sigil — Icon Package Manager
 
-`sigil` manages icons like a package manager: declare the libraries a project
-uses, add exact icon refs to `icons.json`, and generate source files. The
-manifest is durable state; generated files are projections and should not be
-hand-edited.
+Acts on the project in the current directory: declare icon libraries, add exact icon refs to `icons.json`, and etch source files from it. The manifest is durable project-owned state; generated files are projections, never hand-edited. Sigil writes only those two plus its user-level vendor cache. Preflight: `sigil list '{}'`.
 
-## Execution Rules
+Read the section for your task, then only that slice: `sigil @schema .etch`, or several at once with `sigil @schema '.{add,remove}'`. Deeper material: `sigil @skill references/<file>`.
 
-- Start with `sigil @schema`; do not guess command input from memory.
-- Pass one quoted object literal, or `-` / `@payload.yaml` (YAML or JSON5, from
-  stdin or a file) as each command's complete input. Never mix an object with
-  flags.
-- Icon refs are explicit `set/name` strings in arrays. There is no `+`, `,`, or
-  `:` ref DSL.
-- Default output is YAML for agents. YAML is lossless: scripts call a command
-  directly (`sigil list '{}'`) and parse stdout with `Bun.YAML.parse`; progress and diagnostics belong on stderr.
-- Override the manifest with `--context "{ manifest: 'path/to/icons.json' }"`.
-  The default is `icons.json` in the current directory.
-- Treat the manifest and generated files as project-owned source. Sigil only
-  writes those files plus its user-level vendor cache.
+## Everywhere
 
-## Primary Workflow
+- Inspect the project first and match its stack, existing `icons.json`, renderer and output instead of adding a parallel convention.
+- Icon refs are explicit `set/name` strings in arrays; there is no `+`, `,` or `:` DSL.
+- The manifest path defaults to `./icons.json`; override with `--context "{ manifest: 'path/to/icons.json' }"`.
+- Output is lossless YAML on stdout (parse with `Bun.YAML.parse`); progress and diagnostics go to stderr.
 
-1. Inspect the project first. Match the existing stack, `icons.json`, renderer,
-   and generated output instead of introducing a parallel convention.
-2. Discover or declare icon libraries:
+## Choosing libraries and names — `.{sources,use,search}`
 
-   ```bash
-   sigil sources '{}'
-   sigil use "{ sets: ['lucide', 'svgl'] }"
-   sigil use "{ sets: ['ph'], variant: 'duotone' }"
-   ```
+- `use` is the explicit way to provision a set; `add` auto-declares an unknown one. `variant` and `cssMode` are set-level decisions.
+- `search` stays within declared libraries (local vendor cache). `set: '*'` is global Iconify discovery.
+- Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`. For a long-tail or private source set `cssMode` explicitly; don't guess ambiguous color semantics.
 
-3. Find exact names. Default search stays within declared libraries and uses
-   the local vendor cache:
+## Declaring icons — `.{add,remove,list,preset}`
 
-   ```bash
-   sigil search "{ query: 'house' }"
-   sigil search "{ query: 'github', set: 'svgl' }"
-   sigil search "{ query: 'github', set: '*', limit: 20 }"
-   ```
+- Every component is `Icon` + the app name: `as` when set, else PascalCase of the base name. There is no library prefix, so all sets share one namespace (`lucide/house` → `IconHouse`, `.sigil-house`, `house.svg`). When swapping libraries, replace the ref and pin the old name with `as`, so imports never change.
+- Icons store base names while `variant` is a set-level field, so changing a Phosphor weight stays a one-line manifest change.
+- `preset` fills named slots (`Icon<Slot>`) from one library; re-running with another set swaps them in place. `ff` is Fluid Functionalism's slot set; slots a library lacks borrow a Lucide glyph.
+- `untitled-ui` is not open source: its license forbids redistribution and derivative icon libraries. Don't etch it into a published package or UI kit.
+- A bare set ref in `remove` drops the whole library; a full `set/name` drops one icon.
 
-   Omit `set` to search declared libraries. Pass a concrete set ID to focus one
-   library, or `set: '*'` for global Iconify discovery.
+## Generating — `.etch`
 
-4. Add explicit refs. `add` auto-declares an unknown set, but `use` is the
-   explicit provisioning path:
+Pick the output by how the icons are consumed; renderer semantics, `modules` and `pencil`: `sigil @skill references/outputs.md`.
 
-   ```bash
-   sigil add "{ refs: ['lucide/house', 'lucide/menu', 'svgl/github'] }"
-   sigil add "{ refs: ['simple-icons/github'], as: 'GithubBrand' }"
-   ```
+- SVG files: `<img>`, animation, direct SVG DOM. CSS: standalone HTML, including `file://`; keep decorative spans `aria-hidden` and name icon-only controls on the button or link.
+- Framework renderers for built apps. `octane` and Ripple `tsrx` both emit `.tsrx` but are not interchangeable.
+- Afterwards run `sigil list '{}'` and check the generated file is imported or linked where it is used.
 
-5. Generate the artifact:
+## Failure codes
 
-   ```bash
-   sigil etch "{ output: 'public/svg' }"
-   sigil etch "{ output: 'public/icons.css', format: 'css' }"
-   sigil etch "{ output: 'src/components/icons.tsx', jsx: 'react' }"
-   sigil etch "{ output: 'src/components', jsx: 'solid' }"
-   sigil etch "{ output: 'src/components', jsx: 'octane', atlas: true }"
-   sigil etch "{ output: 'src/components', jsx: 'tsrx' }"
-   sigil etch "{ output: 'src/components/icons', jsx: 'react', modules: true }"
-   sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"
-   ```
-
-6. Verify concrete setup with `sigil list '{}'` and check that the generated
-   file is imported or linked where it is used.
-
-## Choose An Output
-
-- Individual SVG files suit `<img>`, independently addressable images,
-  illustration-style icons, animation, and direct SVG DOM control.
-- CSS suits standalone HTML, especially documents opened through `file://`.
-  Keep decorative icon spans `aria-hidden`; give icon-only controls an accessible
-  name on the button or link.
-- Framework renderers suit built applications. `react` and `solid` emit `.tsx`;
-  `octane` and Ripple `tsrx` both emit `.tsrx`, but they are not interchangeable
-  because their JSX types and atlas state APIs differ.
-- Code-split apps (several routes or lazy chunks) should etch `react` or `solid`
-  with `modules: true`: `output` is then a directory holding `index.ts` (a
-  side-effect-free barrel; import from it as before), `_shell.tsx`, one
-  module per icon and a `package.json` with `sideEffects: false` (without it
-  a bundler keeps every icon in each chunk that imports the barrel). A bundler keeps a single-file `icons.tsx` whole in one chunk,
-  so every icon used anywhere ships with the first page that imports any;
-  per-icon modules let each icon land in the chunk that uses it. Re-etching
-  removes stale generated files. `modules` cannot combine with `atlas`.
-- `pencil` emits `@celados/pencil` Path nodes for a pen.dev design folder next
-  to the app: run it against the app's own `icons.json` so designs and code use
-  the same icons and component names (`IconHouse size={16} color="#111827"`).
-  Icons Pen cannot draw (gradients, transforms, masks) fail the etch with the
-  reason. No atlas.
-
-Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`.
-For a long-tail or private source, set `cssMode` explicitly with `use` or in
-`icons.json`. Never guess ambiguous color semantics.
-
-## Manifest Model
-
-`variant` and `cssMode` are set-level decisions. Icons store base names, so
-changing a Phosphor weight remains a one-line manifest change and component
-imports stay stable.
-
-Every component is `Icon` + the icon's app name: `as` when set, otherwise
-PascalCase(base name). There is no library prefix, so all sets share one
-namespace (`lucide/house` → `IconHouse`, CSS `.sigil-house`, `house.svg`).
-When swapping libraries, replace the ref and pin the old name with `as`
-(`{ "name": "home", "as": "House" }` under `tabler` still yields `IconHouse`),
-so imports never change.
-
-### Root presentation contract
-
-Etch hoists `fill`/`stroke`/`stroke-width`/`stroke-linecap`/`stroke-linejoin`
-from the body to the root `<svg>`; children only inherit, and per-element
-values that differ (necessary information) stay. CSS on the `<svg>`
-(`svg { stroke-width: 2 }`, a hover class) therefore overrides line width, and
-fill-based sets get only their own `fill`. Components accept `size`,
-`strokeWidth` (defaults to the set's value) and `class`/`className`.
-
-### Semantic slot presets
-
-`sigil preset` fills named slots from one library; each slot becomes
-`Icon<Slot>` through `as`. Re-running it with another set replaces those
-slots in place, so swapping libraries never touches imports:
-
-```bash
-sigil preset '{}'                                   # list presets, sets, slots
-sigil preset "{ name: 'ff', set: 'lucide' }"
-sigil preset "{ name: 'ff', set: 'tabler' }"        # swap all 59 slots
-sigil preset "{ name: 'ff', set: 'ph', slots: ['search'] }"
-```
-
-`ff` is Fluid Functionalism's slot set (`chevron-right`, `search`,
-`more-horizontal`, …) across `lucide`, `tabler`, `ph`, `hugeicons`, and
-`untitled-ui`. Slots a library lacks borrow a Lucide glyph, as FF does.
-
-`untitled-ui` is not open source: its license allows use in your own products
-but forbids redistribution and derivative icon libraries. Do not etch it into a
-published package or UI kit.
-
-Use a bare set ref to remove an entire library and a full `set/name` ref to
-remove one icon:
-
-```bash
-sigil remove "{ refs: ['lucide/house'] }"
-sigil remove "{ refs: ['svgl'] }"
-```
-
-## Failure Modes
-
-- `missing_upstream` / `icon_not_found`: search the set for the exact base name,
-  fix the manifest or ref, then retry.
-- `component_collision`: two refs (possibly from different sets) produce the
-  same name; give one of them an `as`.
-- `invalid_ref`: use one canonical `set/name` string per array element.
-- `atlas_requires_component_renderer`: set `jsx` to `react`, `solid`, `octane`,
-  or `tsrx` when `atlas` is true.
-- `modules_unsupported` / `modules_atlas` / `modules_output_is_directory`:
-  `modules` needs `jsx` `react` or `solid`, no `atlas`, and a directory output.
-- `conflicting_renderers`: choose either `format: 'css'` or a `jsx` renderer,
-  never both.
+- `missing_upstream` / `icon_not_found`: search the set for the exact base name, fix the ref, retry.
+- `component_collision`: two refs produce the same name; give one an `as`.
+- `invalid_ref`: one canonical `set/name` string per array element.
+- `atlas_requires_component_renderer`: `atlas` needs `jsx` of `react`, `solid`, `octane` or `tsrx`.
+- `modules_unsupported` / `modules_atlas` / `modules_output_is_directory`: `modules` needs `jsx` `react` or `solid`, no `atlas`, a directory output.
+- `conflicting_renderers`: `format: 'css'` or a `jsx` renderer, not both.
