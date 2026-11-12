@@ -2,10 +2,12 @@ import { pickFiles } from '@celados/argc/skill'
 
 // Keep embedded skill files explicit; not every src/ document is agent-facing.
 export function embedSkill(): Record<string, string> {
-	const files = pickFiles(import.meta.dir, ['index.md'])
-	const body = files['index.md']
+	const { 'index.md': body, ...references } = pickFiles(import.meta.dir, [
+		'index.md',
+		'references/**/*.md',
+	])
 	if (body === undefined) {
 		throw new Error('Embedded skill body is missing index.md')
 	}
-	return { 'SKILL.md': body }
+	return { 'SKILL.md': body, ...references }
 }
