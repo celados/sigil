@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Upgrade `@celados/argc` to 10.0.0: a command's input may also arrive as YAML
+- Upgrade `@celados/argc` to 10.2.0: a command's input may also arrive as YAML
   (`sigil <cmd> - <<'EOF'` or `@file`); `@schema` lists both call forms. No
   command used the removed field-level `-`/`@path` convention.
 
