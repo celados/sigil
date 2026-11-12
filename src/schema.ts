@@ -39,10 +39,7 @@ export const schema = {
 		.meta({
 			description:
 				'Declare icon libraries for this project and vendor them locally. Empty input lists supported sources.',
-			examples: [
-				"sigil use \"{ sets: ['lucide', 'svgl'] }\"",
-				"sigil use \"{ sets: ['ph'], variant: 'duotone' }\"",
-			],
+			examples: ["sigil use \"{ sets: ['ph'], variant: 'duotone' }\""],
 		})
 		.input(
 			s(
@@ -58,7 +55,6 @@ export const schema = {
 		.meta({
 			description:
 				'List supported icon sources. Bundled sources vendor locally; every other Iconify set is supported through the API fallback.',
-			examples: ["sigil sources '{}'"],
 		})
 		.input(s(v.object({}))),
 
@@ -66,11 +62,7 @@ export const schema = {
 		.meta({
 			description:
 				'Search icons. Omit set for declared libraries, pass a set ID for one library, or pass * for global Iconify discovery.',
-			examples: [
-				'sigil search "{ query: \'house\' }"',
-				"sigil search \"{ query: 'github', set: '*' }\"",
-				"sigil search \"{ query: 'home', set: 'lucide' }\"",
-			],
+			examples: ["sigil search \"{ query: 'github', set: '*' }\""],
 		})
 		.input(
 			s(
@@ -108,8 +100,6 @@ export const schema = {
 			description:
 				'Fill a preset of semantic icon slots from one library. Each slot becomes Icon<Slot> via as; re-running with another set swaps every slot in place, so imports never change. Empty input lists presets.',
 			examples: [
-				"sigil preset '{}'",
-				"sigil preset \"{ name: 'ff', set: 'lucide' }\"",
 				"sigil preset \"{ name: 'ff', set: 'tabler', slots: ['search', 'chevron-right'] }\"",
 			],
 		})
@@ -128,17 +118,13 @@ export const schema = {
 		.meta({
 			description:
 				'Remove icons from the manifest. A bare set name (no /) removes the whole library declaration.',
-			examples: [
-				'sigil remove "{ refs: [\'lucide/house\'] }"',
-				'sigil remove "{ refs: [\'svgl\'] }"',
-			],
+			examples: ['sigil remove "{ refs: [\'svgl\'] }"'],
 		})
 		.input(s(v.object({ refs: v.pipe(v.array(v.string()), v.minLength(1)) }))),
 
 	list: c
 		.meta({
 			description: 'List manifest icons and their component names',
-			examples: ["sigil list '{}'"],
 		})
 		.input(s(v.object({}))),
 
@@ -147,13 +133,9 @@ export const schema = {
 			description:
 				'Generate icon files from the manifest. Without format or jsx dumps one .svg per icon; format css emits a stylesheet, while jsx emits a component module. With jsx react or solid, modules: true emits a directory instead: one module per icon, a shared _shell module and a side-effect-free index barrel, so a bundler puts each icon in the chunk that uses it (default for code-split apps).',
 			examples: [
-				'sigil etch "{ output: \'public/svg\' }"',
 				"sigil etch \"{ output: 'public/icons.css', format: 'css' }\"",
-				"sigil etch \"{ output: 'src/components/icons.tsx', jsx: 'react' }\"",
-				"sigil etch \"{ output: 'src/components', jsx: 'solid' }\"",
 				"sigil etch \"{ output: 'src/components', jsx: 'octane', atlas: true }\"",
 				"sigil etch \"{ output: 'src/components/icons', jsx: 'react', modules: true }\"",
-				"sigil etch \"{ output: 'design/icons.tsx', jsx: 'pencil' }\"",
 			],
 		})
 		.input(
