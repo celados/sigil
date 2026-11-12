@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+### Changed
+
+- Upgrade `@celados/argc` to 11.0.0: `@schema` is flat Markdown (`## Commands`,
+  one `### <path>` block per command). Examples that only repeated an input's
+  type shape are removed; the rest show ref vocabulary and flag combinations.
+
 ## 0.8.2
 
 ### Changed
