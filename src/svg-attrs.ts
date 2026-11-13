@@ -14,7 +14,7 @@
  *    里已有的属性,填充型图标因此不会被描边属性污染。
  */
 
-export const PRESENTATION_ATTRS = [
+const PRESENTATION_ATTRS = [
 	'fill',
 	'stroke',
 	'stroke-width',

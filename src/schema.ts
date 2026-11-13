@@ -34,7 +34,7 @@ export function runtimeContext(context: AppContext): RuntimeContext {
 }
 
 // Refs stay domain identifiers (`set/name`); command syntax is always an object.
-export const schema = {
+const schema = {
 	use: c
 		.meta({
 			description:
@@ -173,5 +173,3 @@ export const app = cli(schema, {
 	context: s(contextSchema),
 	skill: embedSkill(),
 })
-
-export type AppHandlers = typeof app.Handlers

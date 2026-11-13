@@ -95,7 +95,7 @@ export function effectiveName(
 }
 
 /** 组件名统一前缀。 不带库前缀:组件名是应用对图标的语义命名,换库只改 manifest 的 ref(必要时补 `as` 钉住旧名),import 零改动。 */
-export const ICON_PREFIX = 'Icon'
+const ICON_PREFIX = 'Icon'
 
 /** 图标的语义名 = as | PascalCase(base 名);用 base 名而非 effective 名,切 variant 不改名 */
 export function iconName(entry: FlatEntry): string {

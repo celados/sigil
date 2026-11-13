@@ -181,7 +181,7 @@ await app.run({
 			await attempt(
 				Promise.all(
 					input.sets.map((set) =>
-						sourceFor(set, runtime.vendorRoot).vendor?.(),
+						Promise.resolve(sourceFor(set, runtime.vendorRoot).vendor?.()),
 					),
 				),
 			)
