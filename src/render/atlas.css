@@ -12,11 +12,7 @@
 	color: var(--sigil-atlas-text);
 	background: var(--sigil-atlas-bg);
 	font-family:
-		ui-sans-serif,
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		'Segoe UI',
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
 		sans-serif;
 }
 
