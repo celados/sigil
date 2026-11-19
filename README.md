@@ -17,6 +17,7 @@ sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"  # .tsrx + atla
 sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'tsrx' }"  # Ripple TSRX
 sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"  # pen.dev design
+sigil etch "{ output: 'lib/src/icons.dart', format: 'dart', atlas: true }"  # Flutter
 sigil etch "{ output: 'public/svg' }"               # one .svg per icon
 ```
 
@@ -39,6 +40,50 @@ the first page's chunk; per-icon modules let each icon ship with the chunk that
 uses it. Imports from the directory are unchanged (`import { IconHouse } from
 './icons'`), and re-etching deletes generated files for icons no longer in the
 manifest.
+
+## Flutter (`format: 'dart'`)
+
+`format: 'dart'` emits one Dart library, so a Flutter app shares the web app's
+`icons.json` and icon names. Etch converts every shape to `Path` commands
+(`moveTo`, `lineTo`, `cubicTo`, `arcToPoint`…) ahead of time: the app parses no
+SVG and imports nothing but `package:flutter/widgets.dart` (no `flutter_svg`,
+no Material).
+
+```dart
+import 'icons.dart';
+
+SigilIcon(iconHome)                        // IconTheme size, text color
+SigilIcon(iconHome, size: 16, strokeWidth: 1.5)
+SigilIcon(iconGithub, color: const Color(0xFF111827), semanticLabel: 'GitHub')
+```
+
+- Each icon is a `const` `SigilIconData` named after the web component
+  (`IconHome` → `iconHome`): its viewBox, its own stroke width, and a paint tree
+  of shapes with fill/stroke, linecap/linejoin and per-shape stroke widths.
+  Paths are built once and cached.
+- `color` replaces `currentColor` and defaults to the ambient text color
+  (`DefaultTextStyle`), then `IconTheme`. `strokeWidth` (viewBox units)
+  replaces the icon's own width for every stroke that inherits it, like
+  `stroke-width` on the web's `<svg>`: animate it for a hover cue.
+- Colors follow the CSS rule: `mask` sets paint everything in `color` at each
+  paint's own alpha; full-color sets (`svgl`) keep their authored colors,
+  linear and radial gradients, clip paths, masks, transforms and opacity.
+  Anything Flutter's widgets layer cannot draw (`<style>` rules, filters other
+  than one Gaussian blur, `<text>`) fails the etch with the icon and the reason.
+- `SigilIconPainter` and `paintSigilIcon(canvas, size, icon, color:,
+  strokeWidth:)` draw an icon inside your own painter, for example one that
+  repaints from a `Listenable` without a rebuild.
+- `atlas: true` adds `icons.atlas.dart` with `sigilIconAtlasItems` and a
+  searchable `SigilIconAtlas` grid; `onSelect` receives the tapped item (copy
+  `item.ref` to the clipboard there).
+- `modules: true` writes a directory instead: `_shell.dart`, one library per
+  icon and an `index.dart` barrel. Dart's tree shaking already drops unused
+  constants from a single file, so this is a layout preference, not a size win.
+
+Generated files start with `// dart format off`, so a project's formatter
+leaves them as etched.
+
+## CSS (`format: 'css'`)
 
 `format: 'css'` emits one self-contained stylesheet for standalone HTML,
 including documents opened directly through `file://`:

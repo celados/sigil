@@ -23,7 +23,7 @@ export function writeModules(output: string, files: RenderedFile[]): void {
 		const path = join(output, name)
 		if (
 			!keep.has(name) &&
-			/\.tsx?$/.test(name) &&
+			/\.(tsx?|dart)$/.test(name) &&
 			readFileSync(path, 'utf8').startsWith(GENERATED_MARK)
 		) {
 			rmSync(path)

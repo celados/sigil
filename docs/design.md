@@ -21,6 +21,7 @@ sigil etch "{ output: 'src/icons.tsx', jsx: 'react', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'octane', atlas: true }"
 sigil etch "{ output: 'src/icons', jsx: 'tsrx', atlas: true }"
 sigil etch "{ output: 'design/icons.tsx', jsx: 'pencil' }"  # pencil 设计稿
+sigil etch "{ output: 'lib/src/icons.dart', format: 'dart' }"  # Flutter,生成时转 Path
 sigil etch "{ output: 'public/svg' }"       # 无 jsx → dump 独立 .svg 文件
 ```
 

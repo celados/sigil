@@ -31,6 +31,7 @@ Pick the output by how the icons are consumed; renderer semantics, `modules` and
 
 - SVG files: `<img>`, animation, direct SVG DOM. CSS: standalone HTML, including `file://`; keep decorative spans `aria-hidden` and name icon-only controls on the button or link.
 - Framework renderers for built apps. `octane` and Ripple `tsrx` both emit `.tsrx` but are not interchangeable.
+- Flutter: `format: 'dart'` with a `.dart` output (or a directory with `modules: true`), against the web app's own `icons.json` so both share icons and names. Use `SigilIcon(iconHome, size: 16)`; never add `flutter_svg` or an icon font next to it.
 - Afterwards run `sigil list '{}'` and check the generated file is imported or linked where it is used.
 
 ## Failure codes
@@ -38,6 +39,7 @@ Pick the output by how the icons are consumed; renderer semantics, `modules` and
 - `missing_upstream` / `icon_not_found`: search the set for the exact base name, fix the ref, retry.
 - `component_collision`: two refs produce the same name; give one an `as`.
 - `invalid_ref`: one canonical `set/name` string per array element.
-- `atlas_requires_component_renderer`: `atlas` needs `jsx` of `react`, `solid`, `octane` or `tsrx`.
-- `modules_unsupported` / `modules_atlas` / `modules_output_is_directory`: `modules` needs `jsx` `react` or `solid`, no `atlas`, a directory output.
-- `conflicting_renderers`: `format: 'css'` or a `jsx` renderer, not both.
+- `atlas_requires_component_renderer`: `atlas` needs `jsx` of `react`, `solid`, `octane` or `tsrx`, or `format: 'dart'`.
+- `modules_unsupported` / `modules_atlas` / `modules_output_is_directory`: `modules` needs `jsx` `react` or `solid` or `format: 'dart'`, no `atlas`, a directory output.
+- `conflicting_renderers`: a `format` or a `jsx` renderer, not both.
+- `render_failed`: the target cannot draw an icon (pencil or dart: the message names the icon and the SVG feature); pick another icon or set.

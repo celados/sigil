@@ -65,6 +65,13 @@ describe('argc command surface', () => {
 		expect(result.stderr.toString()).toContain('unknown key')
 	})
 
+	test('etch offers the Flutter target as a format', () => {
+		const { result } = run(['@schema', '.etch'])
+
+		expect(result.exitCode).toBe(0)
+		expect(result.stdout.toString()).toContain('format?: "css" | "dart"')
+	})
+
 	test('add rejects separator DSL as an invalid ref', () => {
 		const { cwd, result } = run(['add', "{ refs: ['lucide/house+menu'] }"])
 

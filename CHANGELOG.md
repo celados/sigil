@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.10.0
+
+### Added
+
+- `format: 'dart'` etch target: a Flutter library that shares the web app's
+  `icons.json` and names (`IconHome` → `iconHome`). Shapes become `Path`
+  commands at etch time; the library imports only
+  `package:flutter/widgets.dart`. `SigilIcon(icon, size:, color:,
+  strokeWidth:)` paints with `currentColor` bound to the ambient text color and
+  `strokeWidth` replacing the inherited root width; `paintSigilIcon` and
+  `SigilIconPainter` draw inside custom painters. Mask sets paint in one color,
+  full-color sets keep authored colors, gradients, clips, masks and transforms,
+  as the CSS target does; what Flutter cannot draw fails the etch with the
+  reason. Works with `atlas: true` (`SigilIconAtlas`) and `modules: true`.
+
+### Changed
+
+- Shape-to-path conversion moved to `src/render/geometry.ts`, shared by the
+  pencil and dart targets.
+
 ## 0.9.2
 
 ### Changed

@@ -3,6 +3,7 @@ import type { NamedIcon, Renderer } from './types.ts'
 
 import { formatRef } from '../ref.ts'
 import { parse, SHAPES } from '../svg-attrs.ts'
+import { GEOMETRY, shapePath } from './geometry.ts'
 import { licenseTag } from './types.ts'
 
 /**
@@ -25,15 +26,6 @@ type Layer = {
 	opacity?: number
 }
 
-const GEOMETRY: Record<string, string[]> = {
-	path: ['d'],
-	circle: ['cx', 'cy', 'r'],
-	ellipse: ['cx', 'cy', 'rx', 'ry'],
-	rect: ['x', 'y', 'width', 'height', 'rx', 'ry'],
-	line: ['x1', 'y1', 'x2', 'y2'],
-	polyline: ['points'],
-	polygon: ['points'],
-}
 const INHERITED = [
 	'fill',
 	'stroke',
@@ -44,84 +36,6 @@ const INHERITED = [
 	'fill-rule',
 ]
 const IGNORED_TAGS = new Set(['title', 'desc'])
-
-const NUMBER = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/g
-
-const num = (el: Element, name: string) =>
-	Number(el.attrs.find(([k]) => k === name)?.[1] ?? 0)
-
-/**
- * A leading `m` is absolute only at the start of a path; once paths are
- * concatenated it would turn relative, so rewrite it as `M` plus the implicit
- * relative lineto that followed it.
- */
-function absoluteStart(d: string): string {
-	const m = /^\s*m\s*([^a-zA-Z]*)([\s\S]*)$/.exec(d)
-	if (!m) return d.trim()
-	const [x, y, ...rest] = m[1]!.match(NUMBER) ?? []
-	return `M${x} ${y}${rest.length ? `l${rest.join(' ')}` : ''}${m[2]}`
-}
-
-function pointsPath(points: string, close: boolean): string {
-	const n = points.match(NUMBER) ?? []
-	const pairs: string[] = []
-	for (let i = 0; i + 1 < n.length; i += 2) pairs.push(`${n[i]} ${n[i + 1]}`)
-	return `M${pairs.join('L')}${close ? 'z' : ''}`
-}
-
-function ellipsePath(cx: number, cy: number, rx: number, ry: number): string {
-	return `M${cx - rx} ${cy}a${rx} ${ry} 0 1 0 ${2 * rx} 0a${rx} ${ry} 0 1 0 ${-2 * rx} 0z`
-}
-
-function rectPath(el: Element): string {
-	const [x, y, w, h] = ['x', 'y', 'width', 'height'].map((k) => num(el, k)) as [
-		number,
-		number,
-		number,
-		number,
-	]
-	const has = (k: string) => el.attrs.some(([name]) => name === k)
-	let rx = has('rx') ? num(el, 'rx') : has('ry') ? num(el, 'ry') : 0
-	let ry = has('ry') ? num(el, 'ry') : rx
-	rx = Math.min(rx, w / 2)
-	ry = Math.min(ry, h / 2)
-	if (!rx || !ry) return `M${x} ${y}h${w}v${h}h${-w}z`
-	const arc = (dx: number, dy: number) => `a${rx} ${ry} 0 0 1 ${dx} ${dy}`
-	return (
-		`M${x + rx} ${y}h${w - 2 * rx}${arc(rx, ry)}v${h - 2 * ry}${arc(-rx, ry)}` +
-		`h${-(w - 2 * rx)}${arc(-rx, -ry)}v${-(h - 2 * ry)}${arc(rx, -ry)}z`
-	)
-}
-
-function shapePath(el: Element): string {
-	switch (el.tag) {
-		case 'path':
-			return absoluteStart(el.attrs.find(([k]) => k === 'd')?.[1] ?? '')
-		case 'circle':
-			return ellipsePath(
-				num(el, 'cx'),
-				num(el, 'cy'),
-				num(el, 'r'),
-				num(el, 'r'),
-			)
-		case 'ellipse':
-			return ellipsePath(
-				num(el, 'cx'),
-				num(el, 'cy'),
-				num(el, 'rx'),
-				num(el, 'ry'),
-			)
-		case 'rect':
-			return rectPath(el)
-		case 'line':
-			return `M${num(el, 'x1')} ${num(el, 'y1')}L${num(el, 'x2')} ${num(el, 'y2')}`
-		default:
-			return pointsPath(
-				el.attrs.find(([k]) => k === 'points')?.[1] ?? '',
-				el.tag === 'polygon',
-			)
-	}
-}
 
 /** Pen paints solid colors only; currentColor becomes the `color` prop. */
 function paint(value: string | undefined, what: string): string | undefined {
