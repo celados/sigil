@@ -515,10 +515,12 @@ await app.run({
 			if (!manifest || flatten(manifest).length === 0) {
 				fail('manifest_empty', 'manifest is empty — add icons first')
 			}
-			if (input.atlas && (!input.jsx || input.jsx === 'pencil')) {
+			const componentTarget =
+				(input.jsx && input.jsx !== 'pencil') || input.format === 'dart'
+			if (input.atlas && !componentTarget) {
 				fail(
 					'atlas_requires_component_renderer',
-					'atlas requires jsx react, solid, octane, or tsrx',
+					"atlas requires jsx react, solid, octane or tsrx, or format 'dart'",
 				)
 			}
 			if (input.format && input.jsx) {
@@ -529,12 +531,15 @@ await app.run({
 
 			if (input.modules) {
 				if (!renderer.renderModules) {
-					fail('modules_unsupported', 'modules requires jsx react or solid')
+					fail(
+						'modules_unsupported',
+						"modules requires jsx react or solid, or format 'dart'",
+					)
 				}
 				if (input.atlas) {
 					fail('modules_atlas', 'modules and atlas cannot be combined')
 				}
-				if (/\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)) {
+				if (/\.(tsrx|[cm]?[tj]sx?|dart)$/.test(input.output)) {
 					fail(
 						'modules_output_is_directory',
 						'with modules, output is a directory (it receives index.ts, _shell and one file per icon)',
@@ -557,7 +562,7 @@ await app.run({
 			if (renderer.defaultFile) {
 				// CSS 与组件模块各自只认自己的文件后缀，避免把带点号的目录误判成文件。
 				const outputIsFile = input.format
-					? extname(input.output) === '.css'
+					? extname(input.output) === `.${input.format}`
 					: /\.(tsrx|[cm]?[tj]sx?)$/.test(input.output)
 				const out = outputIsFile
 					? input.output
@@ -573,7 +578,9 @@ await app.run({
 						atlasImportPath:
 							renderer.id === 'octane'
 								? `./${basename(out)}`
-								: importPathFor(out),
+								: renderer.id === 'dart'
+									? basename(out)
+									: importPathFor(out),
 					})
 				} catch (e) {
 					fail('render_failed', (e as Error).message)

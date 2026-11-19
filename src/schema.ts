@@ -124,17 +124,25 @@ const schema = {
 	etch: c
 		.meta({
 			description:
-				'Generate icon files from the manifest: one .svg per icon, a CSS stylesheet (format) or component modules (jsx). Renderer semantics: sigil @skill references/outputs.md',
+				'Generate icon files from the manifest: one .svg per icon, a CSS stylesheet or Flutter library (format) or component modules (jsx). Renderer semantics: sigil @skill references/outputs.md',
 			examples: [
 				"sigil etch \"{ output: 'src/components', jsx: 'octane', atlas: true }\"",
 				"sigil etch \"{ output: 'src/components/icons', jsx: 'react', modules: true }\"",
+				"sigil etch \"{ output: 'lib/src/icons.dart', format: 'dart', atlas: true }\"",
 			],
 		})
 		.input(
 			s(
 				v.object({
 					output: v.string(),
-					format: v.optional(v.picklist(['css'])),
+					format: v.optional(
+						v.pipe(
+							v.picklist(['css', 'dart']),
+							v.description(
+								'css: one stylesheet for standalone HTML; dart: a Flutter library of const icons, a SigilIcon widget and Path builders',
+							),
+						),
+					),
 					jsx: v.optional(
 						v.pipe(
 							v.picklist(['react', 'solid', 'octane', 'tsrx', 'pencil']),
@@ -147,7 +155,7 @@ const schema = {
 						v.pipe(
 							v.boolean(),
 							v.description(
-								'Also emit a sidecar searchable IconAtlas preview component (any jsx target)',
+								"Also emit a sidecar searchable IconAtlas preview component (any jsx target but pencil, or format 'dart')",
 							),
 						),
 						false,
@@ -156,7 +164,7 @@ const schema = {
 						v.pipe(
 							v.boolean(),
 							v.description(
-								'One module per icon plus a barrel, for code-split apps (react/solid, directory output, no atlas)',
+								"One module per icon plus a barrel, for code-split apps (react/solid or format 'dart', directory output, no atlas)",
 							),
 						),
 						false,
