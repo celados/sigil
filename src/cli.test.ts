@@ -31,7 +31,7 @@ function run(args: string[]) {
 
 describe('argc command surface', () => {
 	test('schema exposes structured add input', () => {
-		const { result } = run(['@schema', '.add'])
+		const { result } = run(['@schema', 'add'])
 
 		expect(result.exitCode).toBe(0)
 		expect(result.stdout.toString()).toContain('refs: string[]')
@@ -49,7 +49,7 @@ describe('argc command surface', () => {
 	})
 
 	test('search scope is one set field without an all toggle', () => {
-		const { result } = run(['@schema', '.search'])
+		const { result } = run(['@schema', 'search'])
 		const stdout = result.stdout.toString()
 
 		expect(result.exitCode).toBe(0)
@@ -66,7 +66,7 @@ describe('argc command surface', () => {
 	})
 
 	test('etch offers the Flutter target as a format', () => {
-		const { result } = run(['@schema', '.etch'])
+		const { result } = run(['@schema', 'etch'])
 
 		expect(result.exitCode).toBe(0)
 		expect(result.stdout.toString()).toContain('format?: "css" | "dart"')

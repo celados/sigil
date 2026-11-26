@@ -2,7 +2,7 @@
 
 Acts on the project in the current directory: declare icon libraries, add exact icon refs to `icons.json`, and etch source files from it. The manifest is durable project-owned state; generated files are projections, never hand-edited. Sigil writes only those two plus its user-level vendor cache. Preflight: `sigil list '{}'`.
 
-Read the section for your task, then only that slice: `sigil @schema .etch`, or several at once with `sigil @schema '.{add,remove}'`. Deeper material: `sigil @skill references/<file>`.
+Read the section for your task, then only that slice: `sigil @schema etch`, or several at once with `sigil @schema '{add,remove}'`. Deeper material: `sigil @skill references/<file>`.
 
 ## Everywhere
 
@@ -11,13 +11,13 @@ Read the section for your task, then only that slice: `sigil @schema .etch`, or 
 - The manifest path defaults to `./icons.json`; override with `--context "{ manifest: 'path/to/icons.json' }"`.
 - Output is lossless YAML on stdout (parse with `Bun.YAML.parse`); progress and diagnostics go to stderr.
 
-## Choosing libraries and names — `.{sources,use,search}`
+## Choosing libraries and names — `'{sources,use,search}'`
 
 - `use` is the explicit way to provision a set; `add` auto-declares an unknown one. `variant` and `cssMode` are set-level decisions.
 - `search` stays within declared libraries (local vendor cache). `set: '*'` is global Iconify discovery.
 - Bundled monochrome sources default to CSS `mask`; `svgl` defaults to `image`. For a long-tail or private source set `cssMode` explicitly; don't guess ambiguous color semantics.
 
-## Declaring icons — `.{add,remove,list,preset}`
+## Declaring icons — `'{add,remove,list,preset}'`
 
 - Every component is `Icon` + the app name: `as` when set, else PascalCase of the base name. There is no library prefix, so all sets share one namespace (`lucide/house` → `IconHouse`, `.sigil-house`, `house.svg`). When swapping libraries, replace the ref and pin the old name with `as`, so imports never change.
 - Icons store base names while `variant` is a set-level field, so changing a Phosphor weight stays a one-line manifest change.
@@ -25,7 +25,7 @@ Read the section for your task, then only that slice: `sigil @schema .etch`, or 
 - `untitled-ui` is not open source: its license forbids redistribution and derivative icon libraries. Don't etch it into a published package or UI kit.
 - A bare set ref in `remove` drops the whole library; a full `set/name` drops one icon.
 
-## Generating — `.etch`
+## Generating — `etch`
 
 Pick the output by how the icons are consumed; renderer semantics, `modules` and `pencil`: `sigil @skill references/outputs.md`.
 

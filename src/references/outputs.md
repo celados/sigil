@@ -1,6 +1,6 @@
 # sigil outputs
 
-Selector: `sigil @schema .etch`.
+Selector: `sigil @schema etch`.
 
 ## Renderers
 
