@@ -21,15 +21,15 @@
 		"valibot": "^1.4.1"
 	},
 	"devDependencies": {
-		"@celados/harness": "^0.1.6",
+		"@celados/harness": "^0.2.1",
 		"@celados/pencil": "^0.6.1",
 		"@iconify/types": "^2.0.0",
 		"@solidjs/web": "^2.0.0-rc.18",
 		"@types/bun": "^1.3.14",
-		"fallow": "^3.42.0",
+		"fallow": "^3.48.0",
 		"solid-js": "^2.0.0-rc.18",
-		"tsrs": "0.25.0-ts7.1.0-beta",
+		"tsrs": "7.1.0-beta.tsrs4",
 		"typescript": "^7.0.2",
-		"vite-plus": "^1.7.0"
+		"vite-plus": "^1.8.0"
 	}
 }
