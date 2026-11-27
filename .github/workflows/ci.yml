@@ -14,14 +14,17 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # celados ARC pool; public fork PR code stays on GitHub-hosted runners.
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'celados-linux' }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: oven-sh/setup-bun@v2.2.0
+      - uses: ./.github/actions/setup-bun
         with:
           # argc uses Bun's current JSON5 and YAML runtime APIs; pinning an old Bun
-          # version turns valid input parsing into a runtime compatibility gap.
-          bun-version: latest
+          # version turns valid input parsing into a runtime compatibility gap. Keep it
+          # a current release (exact, so the ARC tool cache can serve it).
+          bun-version: 1.4.5
       - name: Configure Celados npm registry
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
